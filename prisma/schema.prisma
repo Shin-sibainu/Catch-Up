@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ユーザーモデル（Clerkと連携）
+model User {
+  id            String    @id @default(cuid())
+  clerkId       String    @unique
+  email         String    @unique
+  name          String?
+  imageUrl      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // 関連付け
+  subscription  Subscription?
+  preferences   UserPreference?
+  bookmarks     Bookmark[]
+  
+  @@index([clerkId])
+}
+
+// サブスクリプションモデル
+model Subscription {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  plan                String   @default("free") // free, pro, premium
+  status              String   @default("active") // active, canceled
+  expiresAt           DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // 関連付け
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// 情報源モデル
+model Source {
+  id          String   @id @default(cuid())
+  name        String   @unique // Zenn, Qiita, HackerNews など
+  apiEndpoint String?
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 関連付け
+  articles    Article[]
+  userPreferences UserPreference[]
+}
+
+// カテゴリーモデル
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique // フロントエンド, バックエンド, インフラ など
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 関連付け
+  articles    Article[]
+  userPreferences UserPreference[]
+}
+
+// 記事モデル
+model Article {
+  id          String   @id @default(cuid())
+  externalId  String   // 外部APIの記事ID
+  title       String
+  url         String
+  author      String?
+  publishedAt DateTime
+  likes       Int      @default(0)
+  sourceId    String
+  categoryId  String?
+  translatedTitle String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 関連付け
+  source      Source   @relation(fields: [sourceId], references: [id])
+  category    Category? @relation(fields: [categoryId], references: [id])
+  bookmarks   Bookmark[]
+  
+  @@unique([sourceId, externalId]) // 同じ情報源からの同じ記事は重複させない
+  @@index([sourceId])
+  @@index([categoryId])
+  @@index([publishedAt])
+}
+
+// ブックマークモデル
+model Bookmark {
+  id          String   @id @default(cuid())
+  userId      String
+  articleId   String
+  createdAt   DateTime @default(now())
+  
+  // 関連付け
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, articleId]) // 同じユーザーが同じ記事を重複してブックマークしない
+  @@index([userId])
+  @@index([articleId])
+}
+
+// ユーザー設定モデル
+model UserPreference {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  articlesPerSource Int  @default(5)
+  darkMode      Boolean  @default(false)
+  sources       Source[] // 表示したい情報源
+  categories    Category[] // 表示したいカテゴリー
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // 関連付け
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// 更新ログモデル
+model FetchLog {
+  id          String   @id @default(cuid())
+  sourceId    String?
+  status      String   // success, failed
+  message     String?
+  articlesCount Int    @default(0)
+  startedAt   DateTime
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  
+  @@index([sourceId])
+  @@index([startedAt])
+}
