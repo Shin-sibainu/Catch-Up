@@ -1,13 +1,13 @@
-import axios from 'axios';
-import { Article } from '../types/article';
+import axios from "axios";
+import { Article } from "../types/article";
 
-const HN_API_URL = 'https://hacker-news.firebaseio.com/v0';
+const HN_API_URL = "https://hacker-news.firebaseio.com/v0";
 
 export async function fetchHackerNewsArticles(): Promise<Article[]> {
   try {
     const topStoriesResponse = await axios.get(`${HN_API_URL}/topstories.json`);
     if (!Array.isArray(topStoriesResponse.data)) {
-      console.error('Invalid response format from Hacker News API');
+      console.error("Invalid response format from Hacker News API");
       return [];
     }
 
@@ -16,19 +16,21 @@ export async function fetchHackerNewsArticles(): Promise<Article[]> {
       try {
         const storyResponse = await axios.get(`${HN_API_URL}/item/${id}.json`);
         const story = storyResponse.data;
-        
+
         if (!story) {
           return null;
         }
 
         return {
-          id: story.id?.toString() || '',
-          title: story.title || '',
+          id: story.id?.toString() || "",
+          title: story.title || "",
           url: story.url || `https://news.ycombinator.com/item?id=${story.id}`,
-          author: story.by || 'Unknown',
-          likes: typeof story.score === 'number' ? story.score : 0,
-          timestamp: story.time ? new Date(story.time * 1000).toISOString() : new Date().toISOString(),
-          source: 'hackernews' as const
+          author: story.by || "Unknown",
+          likes: typeof story.score === "number" ? story.score : 0,
+          timestamp: story.time
+            ? new Date(story.time * 1000).toISOString()
+            : new Date().toISOString(),
+          source: "hackernews" as const,
         };
       } catch (error) {
         console.error(`Error fetching Hacker News story ${id}:`, error);
@@ -37,12 +39,17 @@ export async function fetchHackerNewsArticles(): Promise<Article[]> {
     });
 
     const stories = await Promise.all(storyPromises);
-    return stories.filter((story): story is Article => story !== null);
+    return stories
+      .filter((story): story is NonNullable<typeof story> => story !== null)
+      .map((story) => ({
+        ...story,
+        source: "hackernews" as const,
+      }));
   } catch (error) {
     if (error instanceof Error) {
-      console.error('Error fetching Hacker News articles:', error.message);
+      console.error("Error fetching Hacker News articles:", error.message);
     } else {
-      console.error('Error fetching Hacker News articles:', error);
+      console.error("Error fetching Hacker News articles:", error);
     }
     return [];
   }

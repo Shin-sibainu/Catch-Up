@@ -4,7 +4,7 @@ import { Noto_Sans_JP } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-// import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -13,7 +13,8 @@ const notoSansJP = Noto_Sans_JP({
 
 export const metadata: Metadata = {
   title: "CatchUp - エンジニアの技術情報キャッチアップ",
-  description: "Zenn、Qiita、Hacker Newsの最新トレンドを一箇所で効率的にチェック",
+  description:
+    "Zenn、Qiita、Hacker Newsの最新トレンドを一箇所で効率的にチェック",
 };
 
 export default function RootLayout({
@@ -22,9 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    // <ClerkProvider>
+    <ClerkProvider>
       <html lang="ja" suppressHydrationWarning>
-        <body className={`${notoSansJP.variable} font-sans min-h-screen flex flex-col bg-grid-pattern`}>
+        <body
+          className={`${notoSansJP.variable} font-sans min-h-screen flex flex-col bg-grid-pattern`}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -38,6 +41,6 @@ export default function RootLayout({
           </ThemeProvider>
         </body>
       </html>
-    // </ClerkProvider>
+    </ClerkProvider>
   );
 }
