@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
 }
 
 export default authMiddleware({
-  publicRoutes: ["/", "/api/webhook/clerk"],
+  publicRoutes: ["/", "/api/webhook/clerk", "/api/webhook/stripe"],
 });
 
 export const config = {
