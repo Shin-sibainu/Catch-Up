@@ -1,13 +1,18 @@
 import { FC } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bookmark, ExternalLink, ThumbsUp } from "lucide-react";
-import { useArticles } from "@/hooks/useArticles";
-import { ArticleType } from "@/lib/api/articles";
+import { Article } from "@/lib/types/article";
 
 interface ArticleListProps {
-  source: string;
-  type: ArticleType;
+  articles: Article[];
+  type?: "trending" | "latest" | "bookmarks";
 }
 
 const sourceColors = {
@@ -16,44 +21,44 @@ const sourceColors = {
   hackernews: "border-t-[#FF6600]",
 };
 
-export const ArticleList: FC<ArticleListProps> = ({ source, type }) => {
-  const { articles, isLoading, isError } = useArticles(source, type);
+export const ArticleList = ({
+  articles,
+  type = "trending",
+}: ArticleListProps) => {
+  // typeに基づいて記事をソート
+  const sortedArticles = [...articles]
+    .sort((a, b) => {
+      if (type === "latest") {
+        // 最新順（日付の降順）
+        return (
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+      } else if (type === "trending") {
+        // トレンド順（人気度の降順）
+        const aScore = a.likes + (a.bookmarks || 0);
+        const bScore = b.likes + (b.bookmarks || 0);
+        return bScore - aScore;
+      }
+      return 0; // デフォルト（変更なし）
+    })
+    .slice(0, 30); // 必要に応じて上位30件に制限
 
-  if (isLoading) {
+  // 記事がない場合のメッセージ
+  if (sortedArticles.length === 0) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
-        {[...Array(6)].map((_, i) => (
-          <Card key={i} className="flex flex-col animate-pulse">
-            <CardHeader>
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-              </div>
-            </CardContent>
-            <CardFooter className="mt-auto">
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="text-center py-8 text-muted-foreground">
+        {type === "bookmarks"
+          ? "ブックマークされた記事はありません"
+          : "記事が見つかりませんでした"}
       </div>
     );
   }
 
-  if (isError) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-500">記事の取得中にエラーが発生しました。</p>
-      </div>
-    );
-  }
-
+  // 記事リストの表示
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
-      {articles.map((article) => (
-        <Card 
+      {sortedArticles.map((article) => (
+        <Card
           key={article.id}
           className={`flex flex-col border-t-4 transition-transform hover:scale-[1.01] ${
             sourceColors[article.source] || ""
@@ -71,7 +76,9 @@ export const ArticleList: FC<ArticleListProps> = ({ source, type }) => {
               {article.publication && (
                 <>
                   <span>•</span>
-                  <span className="truncate">{article.publication.displayName}</span>
+                  <span className="truncate">
+                    {article.publication.displayName}
+                  </span>
                 </>
               )}
             </div>
@@ -91,7 +98,7 @@ export const ArticleList: FC<ArticleListProps> = ({ source, type }) => {
               )}
             </div>
             <div className="text-sm text-gray-500 mt-2">
-              {new Date(article.timestamp).toLocaleDateString('ja-JP')}
+              {new Date(article.timestamp).toLocaleDateString("ja-JP")}
             </div>
           </CardContent>
           <CardFooter className="flex justify-between mt-auto">
@@ -99,15 +106,19 @@ export const ArticleList: FC<ArticleListProps> = ({ source, type }) => {
               <Bookmark className="mr-2 h-4 w-4" />
               保存
             </Button>
-            <Button 
-              variant="default" 
+            <Button
+              variant="default"
               size="sm"
               className={`${
-                article.source === 'zenn' ? 'bg-[#3EA8FF]' : 
-                article.source === 'qiita' ? 'bg-[#55C500]' : 
-                article.source === 'hackernews' ? 'bg-[#FF6600]' : ''
+                article.source === "zenn"
+                  ? "bg-[#3EA8FF]"
+                  : article.source === "qiita"
+                  ? "bg-[#55C500]"
+                  : article.source === "hackernews"
+                  ? "bg-[#FF6600]"
+                  : ""
               } hover:opacity-90`}
-              onClick={() => window.open(article.url, '_blank')}
+              onClick={() => window.open(article.url, "_blank")}
             >
               <ExternalLink className="mr-2 h-4 w-4" />
               読む

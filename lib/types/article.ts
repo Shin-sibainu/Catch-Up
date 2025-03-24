@@ -15,6 +15,13 @@ export interface Article {
   };
 }
 
+export interface Source {
+  id: number;
+  name: string;
+  label: string;
+  enabled: boolean;
+}
+
 export interface ArticleResponse {
   articles: Article[];
   hasMore: boolean;
