@@ -3,6 +3,7 @@ import { TrendingArticles } from "@/components/trending/trending-articles";
 import { Suspense } from "react";
 import { LoadingSkeleton } from "@/components/common/loading-skeleton";
 import { fetchAllArticles, getSources } from "@/lib/dal/articles";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function Home() {
   return (
@@ -19,8 +20,13 @@ export default async function Home() {
 }
 
 async function ArticlesContainer() {
-  // fetchAllArticlesを呼び出し、revalidateオプションをページと同じ値に設定
-  const articles = await fetchAllArticles("all", { revalidate: 21600 });
+  const { userId } = await auth();
+
+  // ユーザーIDを渡してfetchAllArticlesを呼び出し
+  const articles = await fetchAllArticles("all", {
+    revalidate: 21600,
+    userId: userId || undefined,
+  });
   const sources = await getSources();
 
   return (

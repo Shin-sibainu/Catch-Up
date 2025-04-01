@@ -8,6 +8,8 @@ export interface Article {
   source: "zenn" | "qiita" | "hackernews";
   emoji?: string;
   bookmarks?: number;
+  isBookmarked?: boolean;
+  bookmarkedAt?: string;
   publication?: {
     name: string;
     displayName: string;
