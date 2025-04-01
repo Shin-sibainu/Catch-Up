@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export const revalidate = 300; // 5分ごとに再検証
 
 export async function GET() {
   try {
     const response = await fetch(
-      'https://qiita.com/api/v2/items?per_page=20&query=stocks:>10&sort=stock',
+      "https://qiita.com/api/v2/items?per_page=20&query=stocks:>10&sort=stock",
       {
         headers: {
-          'Accept': 'application/json',
-          'Authorization': process.env.QIITA_TOKEN ? `Bearer ${process.env.QIITA_TOKEN}` : ''
-        }
+          Accept: "application/json",
+          Authorization: process.env.QIITA_TOKEN
+            ? `Bearer ${process.env.QIITA_TOKEN}`
+            : "",
+        },
       }
     );
 
@@ -30,13 +32,16 @@ export async function GET() {
       stocks_count: article.stocks_count,
       user: {
         id: article.user.id,
-        name: article.user.name
-      }
+        name: article.user.name,
+      },
     }));
 
     return NextResponse.json(articles);
   } catch (error) {
-    console.error('Error fetching from Qiita API:', error);
-    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 });
+    console.error("Error fetching from Qiita API:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch articles" },
+      { status: 500 }
+    );
   }
 }
