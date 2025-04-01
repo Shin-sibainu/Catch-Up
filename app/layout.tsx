@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/toaster";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -38,6 +39,7 @@ export default function RootLayout({
             <Header />
             <div className="flex-1 relative">{children}</div>
             <Footer />
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>
