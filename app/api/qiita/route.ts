@@ -4,19 +4,29 @@ export const revalidate = 300; // 5分ごとに再検証
 
 export async function GET() {
   try {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "User-Agent": `Mozilla/5.0 (compatible; CatchUp/1.0; +${siteUrl})`,
+    };
+
+    // トークンがある場合のみ、Authorizationヘッダーを追加
+    if (process.env.QIITA_TOKEN) {
+      headers["Authorization"] = `Bearer ${process.env.QIITA_TOKEN}`;
+    }
+
     const response = await fetch(
       "https://qiita.com/api/v2/items?per_page=20&query=stocks:>10&sort=stock",
       {
-        headers: {
-          Accept: "application/json",
-          Authorization: process.env.QIITA_TOKEN
-            ? `Bearer ${process.env.QIITA_TOKEN}`
-            : "",
+        headers,
+        next: {
+          revalidate: 300, // 5分ごとに再検証
         },
       }
     );
 
     if (!response.ok) {
+      console.error(`Qiita API error: Status ${response.status}`);
       throw new Error(`Qiita API responded with status: ${response.status}`);
     }
 
@@ -40,7 +50,10 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching from Qiita API:", error);
     return NextResponse.json(
-      { error: "Failed to fetch articles" },
+      {
+        error: "Failed to fetch articles",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
