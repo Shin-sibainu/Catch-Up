@@ -14,11 +14,14 @@ export async function fetchZennArticles(
       next: { revalidate: options.revalidate },
     });
 
+    console.log(response.ok);
+
     if (!response.ok) {
       throw new Error(`Failed to fetch: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log(data);
 
     if (!data?.articles || !Array.isArray(data.articles)) {
       console.error("Invalid response format from Zenn API");
