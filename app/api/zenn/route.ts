@@ -7,7 +7,6 @@ export async function GET() {
     const response = await fetch("https://zenn.dev/api/articles", {
       headers: {
         Accept: "application/json",
-        "User-Agent": "Mozilla/5.0 (compatible; CatchUp/1.0;)",
       },
       next: {
         revalidate: 300, // 5分ごとに再検証
