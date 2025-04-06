@@ -18,7 +18,6 @@ async function getBookmarkStatuses(
   articles: Article[]
 ): Promise<Record<string, { isBookmarked: boolean; bookmarkedAt?: string }>> {
   try {
-    // ユーザーの存在確認
     const user = await prisma.users.findUnique({
       where: { clerkid: userId },
     });
@@ -98,17 +97,17 @@ export async function fetchAllArticles(
     }
 
     // ユーザーIDが提供された場合、ブックマーク状態を取得
-    if (options.userId) {
-      const bookmarkStatuses = await getBookmarkStatuses(
-        options.userId,
-        articles
-      );
-      articles = articles.map((article) => ({
-        ...article,
-        isBookmarked: bookmarkStatuses[article.id]?.isBookmarked || false,
-        bookmarkedAt: bookmarkStatuses[article.id]?.bookmarkedAt,
-      }));
-    }
+    // if (options.userId) {
+    //   const bookmarkStatuses = await getBookmarkStatuses(
+    //     options.userId,
+    //     articles
+    //   );
+    //   articles = articles.map((article) => ({
+    //     ...article,
+    //     isBookmarked: bookmarkStatuses[article.id]?.isBookmarked || false,
+    //     bookmarkedAt: bookmarkStatuses[article.id]?.bookmarkedAt,
+    //   }));
+    // }
 
     return articles;
   } catch (error) {
