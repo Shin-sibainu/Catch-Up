@@ -22,6 +22,8 @@ export default async function Home() {
 async function ArticlesContainer() {
   const { userId } = await auth();
 
+  console.log(userId);
+
   // ユーザーIDを渡してfetchAllArticlesを呼び出し
   const articles = await fetchAllArticles("all", {
     revalidate: 21600,
