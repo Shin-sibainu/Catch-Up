@@ -1,3 +1,5 @@
+"use client";
+
 import { FC, useState } from "react";
 import {
   Card,
@@ -10,17 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Bookmark, ExternalLink, ThumbsUp, Loader2 } from "lucide-react";
 import { Article } from "@/lib/types/article";
 import { bookmarkArticle } from "@/lib/dal/articles";
-import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@clerk/nextjs";
+import { useArticles, ArticleType } from "@/lib/hooks/useArticles";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 interface ArticleListProps {
-  articles: Article[];
-  type?: "trending" | "latest" | "bookmarks";
-  onBookmarkChange: (
-    articleId: string,
-    isBookmarked: boolean,
-    bookmarkedAt?: string
-  ) => void;
+  type?: ArticleType;
+  source?: string;
+  onBookmarkChange?: () => void;
+  userId?: string;
 }
 
 const sourceColors = {
@@ -30,28 +31,52 @@ const sourceColors = {
 };
 
 export const ArticleList: FC<ArticleListProps> = ({
-  articles,
   type = "trending",
+  source = "all",
   onBookmarkChange,
+  userId,
 }) => {
   const { toast } = useToast();
   const { user } = useUser();
+  const { articles, isLoading, error, mutate } = useArticles(
+    source,
+    userId || user?.id,
+    type
+  );
   const [bookmarkingStates, setBookmarkingStates] = useState<{
     [key: string]: boolean;
   }>({});
 
-  // 初期状態を直接articlesから設定
-  const [bookmarkedArticles, setBookmarkedArticles] = useState<{
-    [key: string]: boolean;
-  }>(
-    articles.reduce(
-      (acc, article) => ({
-        ...acc,
-        [article.id]: article.isBookmarked || false,
-      }),
-      {}
-    )
-  );
+  // エラー表示
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        エラーが発生しました。しばらくしてから再度お試しください。
+      </div>
+    );
+  }
+
+  // ローディング表示
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(6)].map((_, i) => (
+          <Card key={i} className="flex flex-col">
+            <CardHeader>
+              <Skeleton className="h-6 w-3/4" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-2/3" />
+            </CardContent>
+            <CardFooter className="mt-auto">
+              <Skeleton className="h-8 w-20" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   // typeに基づいて記事をソート
   const sortedArticles = [...articles]
@@ -104,21 +129,27 @@ export const ArticleList: FC<ArticleListProps> = ({
       const response = await bookmarkArticle(user.id, article);
 
       if (response.success) {
-        const isNowBookmarked = response.action === "added";
-        setBookmarkedArticles((prev) => ({
-          ...prev,
-          [article.id]: isNowBookmarked,
-        }));
+        // サーバーからの応答で最終的な状態を更新
+        const serverUpdatedArticle = {
+          ...article,
+          isBookmarked: response.action === "added",
+          bookmarkedAt:
+            response.action === "added" ? response.bookmarkedAt : undefined,
+        };
+
+        // 即座にUIを更新
+        mutate([serverUpdatedArticle]);
 
         toast({
           title: "成功",
-          description: isNowBookmarked
-            ? "記事をブックマークしました"
-            : "ブックマークを解除しました",
+          description:
+            response.action === "added"
+              ? "記事をブックマークしました"
+              : "ブックマークを解除しました",
         });
 
         // 親コンポーネントに通知
-        onBookmarkChange(article.id, isNowBookmarked, response.bookmarkedAt);
+        onBookmarkChange?.();
       } else {
         throw new Error("ブックマークに失敗しました");
       }
@@ -151,7 +182,9 @@ export const ArticleList: FC<ArticleListProps> = ({
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 text-sm text-gray-500">
-              <span className="font-medium truncate">{article.author}</span>
+              <span className="font-medium truncate">
+                {article.author || "Unknown"}
+              </span>
               {article.publication && (
                 <>
                   <span>•</span>
@@ -164,20 +197,28 @@ export const ArticleList: FC<ArticleListProps> = ({
             <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
               <span className="flex items-center gap-1">
                 <ThumbsUp className="h-4 w-4" />
-                {article.likes}
+                {typeof article.likes === "number"
+                  ? article.likes.toLocaleString()
+                  : "0"}
               </span>
-              {article.bookmarks !== undefined && (
+              {typeof article.bookmarks === "number" && (
                 <>
                   <span>•</span>
                   <span className="flex items-center gap-1">
                     <Bookmark className="h-4 w-4" />
-                    {article.bookmarks}
+                    {article.bookmarks.toLocaleString()}
                   </span>
                 </>
               )}
             </div>
             <div className="text-sm text-gray-500 mt-2">
-              {new Date(article.timestamp).toLocaleDateString("ja-JP")}
+              {article.timestamp
+                ? new Date(article.timestamp).toLocaleDateString("ja-JP", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "日付なし"}
             </div>
           </CardContent>
           <CardFooter className="flex justify-between mt-auto">
@@ -193,13 +234,13 @@ export const ArticleList: FC<ArticleListProps> = ({
               ) : (
                 <Bookmark
                   className={`mr-2 h-4 w-4 ${
-                    bookmarkedArticles[article.id] ? "fill-current" : ""
+                    article.isBookmarked ? "fill-current" : ""
                   }`}
                 />
               )}
               {bookmarkingStates[article.id]
                 ? ""
-                : bookmarkedArticles[article.id]
+                : article.isBookmarked
                 ? "解除"
                 : "保存"}
             </Button>

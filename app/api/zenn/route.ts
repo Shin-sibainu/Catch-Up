@@ -18,9 +18,31 @@ export async function GET() {
     }
 
     const data = await response.json();
-    console.log(data);
 
-    return NextResponse.json(data);
+    // 必要な情報のみを抽出してマッピング
+    const articles = data.articles.map((article: any) => ({
+      id: article.id?.toString() || "",
+      title: article.title || "",
+      url: article.path ? `https://zenn.dev${article.path}` : "",
+      author: article.user?.name || article.user?.username || "Unknown",
+      likes: typeof article.liked_count === "number" ? article.liked_count : 0,
+      bookmarks:
+        typeof article.bookmarked_count === "number"
+          ? article.bookmarked_count
+          : 0,
+      timestamp: article.published_at || new Date().toISOString(),
+      source: "zenn" as const,
+      emoji: article.emoji || undefined,
+      publication: article.publication
+        ? {
+            name: article.publication.name || "",
+            displayName: article.publication.display_name || "",
+            avatarUrl: article.publication.avatar_small_url || undefined,
+          }
+        : undefined,
+    }));
+
+    return NextResponse.json({ articles });
   } catch (error) {
     console.error("Error fetching from Zenn API:", error);
     return NextResponse.json(
