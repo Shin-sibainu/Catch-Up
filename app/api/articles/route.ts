@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Article } from "@/lib/types/article";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 // 型定義
 type BookmarkResult = {
@@ -46,22 +46,39 @@ async function findExistingArticle(externalId: string, sourceName: string) {
   return article;
 }
 
-// ユーザーの存在確認
+// ユーザーの存在確認と作成
 async function findUser(clerkId: string) {
   try {
-    const existingUser = await prisma.users.findUnique({
+    let existingUser = await prisma.users.findUnique({
       where: { clerkid: clerkId },
     });
 
     if (!existingUser) {
-      throw new Error(
-        "ユーザーが見つかりません。システム管理者に連絡してください。"
-      );
+      // Clerkからユーザー情報を取得
+      const clerkUser = await currentUser();
+      if (!clerkUser?.emailAddresses?.[0]?.emailAddress) {
+        throw new Error("ユーザーのメールアドレスが見つかりません");
+      }
+
+      // ユーザーが存在しない場合は作成
+      existingUser = await prisma.users.create({
+        data: {
+          clerkid: clerkId,
+          email: clerkUser.emailAddresses[0].emailAddress,
+          name: clerkUser.firstName
+            ? `${clerkUser.firstName} ${clerkUser.lastName || ""}`.trim()
+            : undefined,
+          imageurl: clerkUser.imageUrl,
+          createdat: new Date(),
+          updatedat: new Date(),
+        },
+      });
+      console.log("Created new user:", existingUser);
     }
 
     return existingUser;
   } catch (error) {
-    console.error("Error finding user:", error);
+    console.error("Error finding/creating user:", error);
     throw error;
   }
 }
@@ -100,7 +117,17 @@ async function findOrCreateArticle(
   const existingArticle = await findExistingArticle(article.id, article.source);
 
   if (existingArticle) {
-    return existingArticle;
+    // 既存の記事のURLを更新
+    return await tx.articles.update({
+      where: { id: existingArticle.id },
+      data: {
+        url: article.url,
+        likes: article.likes || 0,
+        bookmarkcount: article.bookmarks || 0,
+        title: article.title,
+        author: article.author || "",
+      },
+    });
   }
 
   return await tx.articles.create({
