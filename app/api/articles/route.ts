@@ -73,7 +73,6 @@ async function findUser(clerkId: string) {
           updatedat: new Date(),
         },
       });
-      console.log("Created new user:", existingUser);
     }
 
     return existingUser;

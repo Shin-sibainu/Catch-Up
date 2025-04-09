@@ -7,7 +7,6 @@ export async function GET(
 ) {
   try {
     const clerkId = params.userId;
-    console.log("API - clerkId:", clerkId);
 
     // ClerkIDからユーザーを検索
     const user = await prisma.users.findUnique({
@@ -35,9 +34,6 @@ export async function GET(
       },
     });
 
-    console.log("API - bookmarks:", bookmarks);
-
-    // レスポンスデータの整形
     const formattedBookmarks = bookmarks.map((bookmark) => ({
       articleId: bookmark.articles.externalid,
       createdAt: bookmark.createdat,
@@ -52,8 +48,6 @@ export async function GET(
         source: bookmark.articles.sources.name,
       },
     }));
-
-    console.log("API - formattedBookmarks:", formattedBookmarks);
 
     return NextResponse.json(formattedBookmarks);
   } catch (error) {
