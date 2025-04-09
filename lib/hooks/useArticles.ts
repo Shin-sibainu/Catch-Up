@@ -64,10 +64,6 @@ export function useArticles(
     mutate: mutateBookmarks,
   } = useSWR(userId ? `/api/bookmarks/${userId}` : null, fetcher);
 
-  console.log("userId:", userId);
-  console.log("bookmarkData:", bookmarkData);
-  console.log("bookmarkError:", bookmarkError);
-
   const articles: Article[] = [];
 
   if (zennData?.articles) {

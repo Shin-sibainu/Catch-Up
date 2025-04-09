@@ -80,6 +80,12 @@ export const ArticleList: FC<ArticleListProps> = ({
 
   // typeに基づいて記事をソート
   const sortedArticles = [...articles]
+    .filter((article) => {
+      // sourceが"all"の場合は全ての記事を表示
+      if (source === "all") return true;
+      // それ以外の場合は選択されたソースの記事のみを表示
+      return article.source === source;
+    })
     .sort((a, b) => {
       if (type === "latest") {
         // 最新順（日付の降順）
