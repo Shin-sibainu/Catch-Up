@@ -3,10 +3,20 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } }
+  { params: { userId: clerkId } }: { params: { userId: string } }
 ) {
   try {
-    const clerkId = params.userId;
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // デバッグ用：環境変数の確認
+    const dbUrl = process.env.DATABASE_URL;
+    console.log("Database URL exists:", !!dbUrl);
+    console.log("ClerkID:", clerkId);
 
     // ClerkIDからユーザーを検索
     const user = await prisma.users.findUnique({
@@ -14,14 +24,15 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "User not found", clerkId },
+        { status: 404 }
+      );
     }
 
     // ユーザーのブックマーク一覧を取得
     const bookmarks = await prisma.bookmarks.findMany({
-      where: {
-        userid: user.id, // 内部のユーザーIDを使用
-      },
+      where: { userid: user.id },
       include: {
         articles: {
           include: {
@@ -51,9 +62,31 @@ export async function GET(
 
     return NextResponse.json(formattedBookmarks);
   } catch (error) {
-    console.error("Error fetching bookmarks:", error);
+    // エラーの詳細をログに出力
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : "Unknown",
+    });
+
+    if (
+      error instanceof Error &&
+      error.message.includes("FATAL: Tenant or user not found")
+    ) {
+      return NextResponse.json(
+        {
+          error: "Database connection error",
+          details: "Could not connect to database. Please try again later.",
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to fetch bookmarks" },
+      {
+        error: "Failed to fetch bookmarks",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
