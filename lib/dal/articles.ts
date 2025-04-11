@@ -18,7 +18,6 @@ async function getBookmarkStatuses(
   articles: Article[]
 ): Promise<Record<string, { isBookmarked: boolean; bookmarkedAt?: string }>> {
   try {
-    // ユーザーの存在確認
     const user = await prisma.users.findUnique({
       where: { clerkid: userId },
     });
