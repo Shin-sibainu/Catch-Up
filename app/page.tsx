@@ -1,5 +1,7 @@
 import PageHeader from "@/components/common/page-header";
 import { TrendingArticles } from "@/components/trending/trending-articles";
+import { Suspense } from "react";
+import { LoadingSkeleton } from "@/components/common/loading-skeleton";
 
 export default function Home() {
   return (
@@ -8,7 +10,9 @@ export default function Home() {
         title="Catch Up"
         description="エンジニアのための技術記事トレンドをまとめてチェック"
       />
-      <TrendingArticles />
+      <Suspense fallback={<LoadingSkeleton />}>
+        <TrendingArticles />
+      </Suspense>
     </main>
   );
 }

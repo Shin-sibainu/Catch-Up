@@ -66,8 +66,8 @@ export async function POST(req: Request) {
         imageurl: image_url,
         subscriptions: {
           create: {
-            plan: "free",
-            status: "active",
+            plan: "FREE",
+            status: "ACTIVE",
           },
         },
         userpreferences: {
@@ -78,6 +78,40 @@ export async function POST(req: Request) {
         },
       },
     });
+  }
+
+  // ユーザー更新時の処理
+  if (eventType === "user.updated") {
+    const { id, email_addresses, image_url, first_name, last_name } = evt.data;
+    const primaryEmail = email_addresses[0]?.email_address;
+    const name = [first_name, last_name].filter(Boolean).join(" ");
+
+    // データベース内のユーザーを更新
+    await prisma.users.update({
+      where: { clerkid: id },
+      data: {
+        email: primaryEmail,
+        name: name || null,
+        imageurl: image_url,
+        updatedat: new Date(),
+      },
+    });
+  }
+
+  // ユーザー削除時の処理
+  if (eventType === "user.deleted") {
+    const { id } = evt.data;
+
+    // ユーザーとその関連データを削除
+    // Prismaのカスケード削除により、関連するサブスクリプションや設定も自動的に削除されます
+    try {
+      await prisma.users.delete({
+        where: { clerkid: id },
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return new Response("Error deleting user", { status: 500 });
+    }
   }
 
   return new Response("", { status: 200 });
