@@ -32,18 +32,17 @@ export async function GET() {
 
     const data = await response.json();
 
-    // 必要な情報のみを抽出
+    // 必要な情報のみを抽出してマッピング
     const articles = data.map((article: any) => ({
-      id: article.id,
-      title: article.title,
-      url: article.url,
-      created_at: article.created_at,
-      likes_count: article.likes_count,
-      stocks_count: article.stocks_count,
-      user: {
-        id: article.user.id,
-        name: article.user.name,
-      },
+      id: article.id?.toString() || "",
+      title: article.title || "",
+      url: article.url || "",
+      author: article.user?.name || article.user?.id || "Unknown",
+      likes: typeof article.likes_count === "number" ? article.likes_count : 0,
+      bookmarks:
+        typeof article.stocks_count === "number" ? article.stocks_count : 0,
+      timestamp: article.created_at || new Date().toISOString(),
+      source: "qiita" as const,
     }));
 
     return NextResponse.json(articles);
