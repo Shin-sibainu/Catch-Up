@@ -66,8 +66,8 @@ export async function POST(req: Request) {
         imageurl: image_url,
         subscriptions: {
           create: {
-            plan: "free",
-            status: "active",
+            plan: "FREE",
+            status: "ACTIVE",
           },
         },
         userpreferences: {
