@@ -1,34 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { FC, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArticleList } from "./article-list";
 import { SourceSelector } from "./source-selector";
+import { useUser } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
 
-export const TrendingArticles = () => {
+export const TrendingArticles: FC = () => {
   const [selectedSource, setSelectedSource] = useState("all");
+  const { user } = useUser();
+
+  const handleSourceChange = (source: string) => {
+    setSelectedSource(source);
+  };
 
   return (
-    <div className="space-y-8">
-      <SourceSelector 
-        selectedSource={selectedSource} 
-        onSourceChange={setSelectedSource} 
-      />
+    <div>
+      <div className="mb-8">
+        <SourceSelector
+          selectedSource={selectedSource}
+          onSourceChange={handleSourceChange}
+        />
+      </div>
       <Tabs defaultValue="trending" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="trending">Trending</TabsTrigger>
-          <TabsTrigger value="latest">Latest</TabsTrigger>
-          <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
+        <TabsList
+          className={cn(
+            "grid w-full mb-8",
+            user ? "grid-cols-3" : "grid-cols-2"
+          )}
+        >
+          <TabsTrigger value="trending">トレンド</TabsTrigger>
+          <TabsTrigger value="latest">最新</TabsTrigger>
+          {user && <TabsTrigger value="bookmarks">保存済み</TabsTrigger>}
         </TabsList>
         <TabsContent value="trending">
-          <ArticleList source={selectedSource} type="trending" />
+          <ArticleList type="trending" source={selectedSource} />
         </TabsContent>
         <TabsContent value="latest">
-          <ArticleList source={selectedSource} type="latest" />
+          <ArticleList type="latest" source={selectedSource} />
         </TabsContent>
-        <TabsContent value="bookmarks">
-          <ArticleList source={selectedSource} type="bookmarks" />
-        </TabsContent>
+        {user && (
+          <TabsContent value="bookmarks">
+            <ArticleList
+              type="bookmarks"
+              source={selectedSource}
+              userId={user.id}
+            />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

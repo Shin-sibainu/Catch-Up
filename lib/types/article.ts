@@ -8,11 +8,20 @@ export interface Article {
   source: "zenn" | "qiita" | "hackernews";
   emoji?: string;
   bookmarks?: number;
+  isBookmarked?: boolean;
+  bookmarkedAt?: string;
   publication?: {
     name: string;
     displayName: string;
     avatarUrl?: string;
   };
+}
+
+export interface Source {
+  id: number;
+  name: string;
+  label: string;
+  enabled: boolean;
 }
 
 export interface ArticleResponse {
