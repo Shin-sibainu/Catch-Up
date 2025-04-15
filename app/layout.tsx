@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     siteName: process.env.NEXT_PUBLIC_SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph-image.png",
         width: 1200,
         height: 630,
         alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
@@ -73,7 +73,6 @@ export const metadata: Metadata = {
     description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
     creator: "@Shin_Engineer",
     site: "@Shin_Engineer",
-    images: ["/twitter-image"],
   },
   verification: {
     google: "google-site-verification-code",
