@@ -13,12 +13,6 @@ const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
 });
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-};
-
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
@@ -58,14 +52,14 @@ export const metadata: Metadata = {
     description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
     type: "website",
     siteName: process.env.NEXT_PUBLIC_SITE_NAME,
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
-      },
-    ],
+    // images: [
+    //   {
+    //     url: "/opengraph-image",
+    //     width: 1200,
+    //     height: 630,
+    //     alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
+    //   },
+    // ],
   },
   twitter: {
     card: "summary_large_image",
@@ -73,14 +67,14 @@ export const metadata: Metadata = {
     description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
     creator: "@Shin_Engineer",
     site: "@Shin_Engineer",
-    images: [
-      {
-        url: "/twitter-image",
-        width: 1200,
-        height: 630,
-        alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
-      },
-    ],
+    // images: [
+    //   {
+    //     url: "/twitter-image",
+    //     width: 1200,
+    //     height: 630,
+    //     alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
+    //   },
+    // ],
   },
   verification: {
     google: "google-site-verification-code",
