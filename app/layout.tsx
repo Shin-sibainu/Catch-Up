@@ -50,11 +50,25 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  openGraph: {
+    type: "website",
+    siteName: process.env.NEXT_PUBLIC_SITE_NAME,
+    title: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
+    description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
+    description:
+      "Zenn、Qiita、Hacker Newsの最新トレンドを一箇所で効率的にチェック",
+    site: "@Shin_Engineer",
+  },
   verification: {
     google: "google-site-verification-code",
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL,
+    canonical: "/",
   },
   // manifest: "/site.webmanifest",
 };
