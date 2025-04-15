@@ -50,36 +50,13 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  openGraph: {
-    type: "website",
-    locale: "ja_JP",
-    url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: process.env.NEXT_PUBLIC_SITE_NAME,
-    title: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
-    description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
-    description:
-      "Zenn、Qiita、Hacker Newsの最新トレンドを一箇所で効率的にチェック",
-    images: ["/og-image.png"],
-  },
   verification: {
     google: "google-site-verification-code",
   },
   alternates: {
     canonical: process.env.NEXT_PUBLIC_SITE_URL,
   },
-  manifest: "/site.webmanifest",
+  // manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
