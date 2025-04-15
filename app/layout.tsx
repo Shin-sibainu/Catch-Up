@@ -56,6 +56,7 @@ export const metadata: Metadata = {
     title: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
     description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
     url: "/",
+    images: ["/opengraph-image"],
   },
   twitter: {
     card: "summary_large_image",
@@ -63,6 +64,8 @@ export const metadata: Metadata = {
     description:
       "Zenn、Qiita、Hacker Newsの最新トレンドを一箇所で効率的にチェック",
     site: "@Shin_Engineer",
+    creator: "@Shin_Engineer",
+    images: ["/twitter-image"],
   },
   verification: {
     google: "google-site-verification-code",
