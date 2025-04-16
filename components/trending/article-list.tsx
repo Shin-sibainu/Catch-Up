@@ -122,48 +122,75 @@ export const ArticleList: FC<ArticleListProps> = ({
   const handleBookmark = async (article: Article) => {
     if (!user) {
       toast({
-        title: "エラー",
-        description: "ブックマークするにはログインが必要です",
         variant: "destructive",
+        description: "ブックマークするにはログインが必要です",
       });
       return;
     }
 
+    setBookmarkingStates((prev) => ({ ...prev, [article.id]: true }));
+
     try {
-      setBookmarkingStates((prev) => ({ ...prev, [article.id]: true }));
+      // 即時的なUI更新のために、楽観的な更新を行う
+      const optimisticData = sortedArticles.map((a) => {
+        if (a.id === article.id) {
+          return {
+            ...a,
+            isBookmarked: !a.isBookmarked,
+            bookmarkedAt: !a.isBookmarked
+              ? new Date().toISOString()
+              : undefined,
+          };
+        }
+        return a;
+      });
+
+      // 楽観的更新を即時反映
+      mutate(optimisticData);
 
       const response = await bookmarkArticle(user.id, article);
 
       if (response.success) {
-        // サーバーからの応答で最終的な状態を更新
-        const serverUpdatedArticle = {
-          ...article,
-          isBookmarked: response.action === "added",
-          bookmarkedAt:
-            response.action === "added" ? response.bookmarkedAt : undefined,
-        };
+        const result = response;
 
-        // 即座にUIを更新
-        mutate([serverUpdatedArticle]);
+        // サーバーからの応答に基づいて最終的な更新を行う
+        const updatedArticles = sortedArticles.map((a) => {
+          if (a.id === article.id) {
+            return {
+              ...a,
+              isBookmarked: result.action === "added",
+              bookmarkedAt: result.bookmarkedAt,
+            };
+          }
+          return a;
+        });
+
+        mutate(updatedArticles);
 
         toast({
-          title: "成功",
           description:
-            response.action === "added"
-              ? "記事をブックマークしました"
+            result.action === "added"
+              ? "ブックマークに追加しました"
               : "ブックマークを解除しました",
         });
 
         // 親コンポーネントに通知
         onBookmarkChange?.();
       } else {
-        throw new Error("ブックマークに失敗しました");
+        // エラー時は楽観的更新を元に戻す
+        mutate(sortedArticles);
+        toast({
+          variant: "destructive",
+          description: "ブックマークの更新に失敗しました",
+        });
       }
     } catch (error) {
+      console.error("Bookmark error:", error);
+      // エラー時は楽観的更新を元に戻す
+      mutate(sortedArticles);
       toast({
-        title: "エラー",
-        description: "ブックマークに失敗しました",
         variant: "destructive",
+        description: "ブックマークの更新に失敗しました",
       });
     } finally {
       setBookmarkingStates((prev) => ({ ...prev, [article.id]: false }));

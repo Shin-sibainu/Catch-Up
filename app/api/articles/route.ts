@@ -88,23 +88,88 @@ async function handleBookmarkTransaction(
   article: Article,
   clerkUserId: string
 ): Promise<BookmarkResult> {
-  // 1. ユーザーの存在確認
-  const dbUser = await findUser(clerkUserId);
+  try {
+    // 1. ユーザーの存在確認とソースの確認を並列で実行
+    const [dbUser, source] = await Promise.all([
+      findUser(clerkUserId),
+      tx.sources.upsert({
+        where: { name: article.source },
+        create: { name: article.source },
+        update: {},
+      }),
+    ]);
 
-  // 2. sourceの存在確認と作成
-  const sourceId = await ensureSourceExists(article.source);
+    if (!dbUser) {
+      throw new Error(
+        "ユーザーが見つかりません。システム管理者に連絡してください。"
+      );
+    }
 
-  // 3. 記事の存在確認と保存
-  const dbArticle = await findOrCreateArticle(tx, article, sourceId);
+    // 2. 記事の存在確認と保存を1回のクエリで実行
+    const dbArticle = await tx.articles.upsert({
+      where: {
+        sourceid_externalid: {
+          sourceid: source.id,
+          externalid: article.id,
+        },
+      },
+      create: {
+        externalid: article.id,
+        title: article.title,
+        url: article.url,
+        author: article.author,
+        publishedat: new Date(article.timestamp),
+        likes: article.likes,
+        sourceid: source.id,
+      },
+      update: {
+        likes: article.likes,
+      },
+    });
 
-  // 4. ブックマークの処理
-  const bookmarkResult = await toggleBookmark(tx, dbUser.id, dbArticle.id);
+    // 3. ブックマークの処理を最適化
+    const existingBookmark = await tx.bookmarks.findUnique({
+      where: {
+        userid_articleid: {
+          userid: dbUser.id,
+          articleid: dbArticle.id,
+        },
+      },
+    });
 
-  return {
-    action: bookmarkResult.action,
-    dbArticle,
-    bookmarkedAt: bookmarkResult.bookmarkedAt,
-  };
+    let action: "added" | "removed";
+    let bookmarkedAt: string | undefined;
+
+    if (existingBookmark) {
+      await tx.bookmarks.delete({
+        where: {
+          userid_articleid: {
+            userid: dbUser.id,
+            articleid: dbArticle.id,
+          },
+        },
+      });
+      action = "removed";
+    } else {
+      const bookmark = await tx.bookmarks.create({
+        data: {
+          userid: dbUser.id,
+          articleid: dbArticle.id,
+        },
+      });
+      action = "added";
+      bookmarkedAt = bookmark.createdat.toISOString();
+    }
+
+    return {
+      action,
+      dbArticle,
+      bookmarkedAt,
+    };
+  } catch (error) {
+    console.error("Transaction error:", error);
+    throw error;
+  }
 }
 
 // 記事の検索または作成を行う関数
