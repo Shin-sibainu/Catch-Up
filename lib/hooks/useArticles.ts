@@ -120,11 +120,17 @@ export function useArticles(
   // ブックマーク済み記事のフィルタリング
   if (type === "bookmarks" && bookmarkData) {
     // ブックマークデータから記事情報を取得
-    filteredArticles = bookmarkData.map((bookmark: Bookmark) => ({
-      ...bookmark.article,
-      isBookmarked: true,
-      bookmarkedAt: bookmark.createdAt,
-    }));
+    filteredArticles = bookmarkData.map((bookmark: Bookmark) => {
+      const originalArticle = articles.find(
+        (a) => a.id === bookmark.article.id
+      );
+      return {
+        ...bookmark.article,
+        emoji: originalArticle?.emoji, // 元の記事からemojiを取得
+        isBookmarked: true,
+        bookmarkedAt: bookmark.createdAt,
+      };
+    });
   }
 
   // 記事のソート
