@@ -37,6 +37,22 @@ export const Footer = () => {
                   ヘルプセンター
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="hover:text-foreground transition-colors"
+                >
+                  利用規約
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="hover:text-foreground transition-colors"
+                >
+                  プライバシーポリシー
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -56,7 +72,7 @@ export const Footer = () => {
           </div>
         </div>
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          © 2024 Tech Trends. All rights reserved.
+          © 2025 Catch Up. All rights reserved.
         </div>
       </div>
     </footer>

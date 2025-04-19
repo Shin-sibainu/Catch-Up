@@ -208,7 +208,10 @@ export const ArticleList: FC<ArticleListProps> = ({
           }`}
         >
           <CardHeader>
-            <CardTitle className="text-lg font-semibold line-clamp-2">
+            <CardTitle
+              className="text-lg font-semibold line-clamp-2 cursor-pointer hover:text-primary hover:underline underline-offset-1 transition-colors"
+              onClick={() => window.open(article.url, "_blank")}
+            >
               {article.emoji && <span className="mr-2">{article.emoji}</span>}
               {article.title}
             </CardTitle>
