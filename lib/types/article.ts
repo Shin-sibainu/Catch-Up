@@ -5,7 +5,7 @@ export interface Article {
   author: string;
   likes: number;
   timestamp: string;
-  source: "zenn" | "qiita" | "hackernews";
+  source: "zenn" | "qiita" | "hackernews" | "courses";
   emoji?: string;
   bookmarks?: number;
   isBookmarked?: boolean;

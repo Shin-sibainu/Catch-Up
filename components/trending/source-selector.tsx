@@ -3,7 +3,7 @@
 import { FC } from "react";
 import { Source } from "@/lib/types/article";
 import { cn } from "@/lib/utils";
-import { Zap, BookOpen, Globe, MonitorSmartphone } from "lucide-react";
+import { Zap, BookOpen, Globe, MonitorSmartphone, Video } from "lucide-react";
 
 interface SourceSelectorProps {
   selectedSource: string;
@@ -42,6 +42,14 @@ const sources: (Source & { color: string; icon: any })[] = [
     enabled: true,
     color: "bg-[#FF6600]",
     icon: MonitorSmartphone,
+  },
+  {
+    id: 4,
+    name: "courses",
+    label: "Udemy",
+    enabled: true,
+    color: "bg-gradient-to-r from-purple-500 to-purple-600",
+    icon: Video,
   },
 ];
 
