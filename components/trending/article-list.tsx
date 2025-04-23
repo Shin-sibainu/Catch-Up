@@ -9,13 +9,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bookmark, ExternalLink, ThumbsUp, Loader2 } from "lucide-react";
+import {
+  Bookmark,
+  ExternalLink as ExternalLinkIcon,
+  ThumbsUp,
+  Loader2,
+} from "lucide-react";
 import { Article } from "@/lib/types/article";
 import { bookmarkArticle } from "@/lib/dal/articles";
 import { useUser } from "@clerk/nextjs";
 import { useArticles, ArticleType } from "@/lib/hooks/useArticles";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 interface ArticleListProps {
   type?: ArticleType;
@@ -208,13 +214,15 @@ export const ArticleList: FC<ArticleListProps> = ({
           }`}
         >
           <CardHeader>
-            <CardTitle
-              className="text-lg font-semibold line-clamp-2 cursor-pointer hover:text-primary hover:underline underline-offset-1 transition-colors"
-              onClick={() => window.open(article.url, "_blank")}
+            <Link
+              href={article.url}
+              className="text-lg font-semibold line-clamp-2 hover:text-primary transition-colors hover:underline underline-offset-1"
+              target="_blank"
+              rel="noreferrer"
             >
               {article.emoji && <span className="mr-2">{article.emoji}</span>}
               {article.title}
-            </CardTitle>
+            </Link>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -280,23 +288,24 @@ export const ArticleList: FC<ArticleListProps> = ({
                 ? "解除"
                 : "保存"}
             </Button>
-            <Button
-              variant="default"
-              size="sm"
-              className={`${
-                article.source === "zenn"
-                  ? "bg-[#3EA8FF]"
-                  : article.source === "qiita"
-                  ? "bg-[#55C500]"
-                  : article.source === "hackernews"
-                  ? "bg-[#FF6600]"
-                  : ""
-              } hover:opacity-90`}
-              onClick={() => window.open(article.url, "_blank")}
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              読む
-            </Button>
+            <Link href={article.url} target="_blank" rel="noreferrer">
+              <Button
+                variant="default"
+                size="sm"
+                className={`${
+                  article.source === "zenn"
+                    ? "bg-[#3EA8FF]"
+                    : article.source === "qiita"
+                    ? "bg-[#55C500]"
+                    : article.source === "hackernews"
+                    ? "bg-[#FF6600]"
+                    : ""
+                } hover:opacity-90`}
+              >
+                <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                読む
+              </Button>
+            </Link>
           </CardFooter>
         </Card>
       ))}
