@@ -22,6 +22,7 @@ import { useArticles, ArticleType } from "@/lib/hooks/useArticles";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { VideoCourses } from "./video-courses";
 
 interface ArticleListProps {
   type?: ArticleType;
@@ -34,7 +35,48 @@ const sourceColors = {
   zenn: "border-t-[#3EA8FF]",
   qiita: "border-t-[#55C500]",
   hackernews: "border-t-[#FF6600]",
+  courses: "border-t-[#A435F0]",
 };
+
+// 仮のデータ（後で実際のデータに置き換え）
+const TEMP_COURSES = [
+  {
+    id: "dev-course-1",
+    title:
+      "画像生成AI SaaSを作りながらNext.js App RouterとStripeサブスク決済機能が学べる実践開発講座",
+    description:
+      "Next.js App Router/Stripe/Clerk/Prisma/Stable Difussion APIを使ってAI SaaSを開発します。個人開発では必須のStripe決済機能実装とClerk認証まで学べます。",
+    url: "https://www.udemy.com/course/ai-saas-nextjs-app-router-with-stripe/?couponCode=A98108054E0F720932E7",
+    thumbnail: "/images/courses/ai-saas-with-nextjs-and-stripe.png",
+  },
+  {
+    id: "dev-course-2",
+    title:
+      "実例で学ぶNext.js App Routerの基礎とベストプラクティス完全マスター講座",
+    description:
+      "Next.js AppRouter開発における基礎とベストプラクティスを網羅的に学べる講座です。ルーティング/コンポーネント/データフェッチ/キャッシュ/レンダリング/メタデータ/ミドルウェアまでこの講座1つで完全マスターできます。",
+    url: "https://www.udemy.com/course/nextjs-app-router-basic-and-best-practice/?couponCode=E70FB08D750BAD1063E2",
+    thumbnail: "/images/courses/nextjs-best-practice-for-udemy-mod.png",
+  },
+  {
+    id: "dev-course-3",
+    title:
+      "【最先端】Next.js15マスター講座 - ServerActions/新登場HooksをSNS開発で理解しよう -",
+    description:
+      "Next.js15をSNSを開発で学ぶ講座です。useOptimistic/useFormState/ServerActionsを学ぶことができます。認証はClerkを採用しておりWebhooksを使ってSupabaseとの連携まで行います",
+    url: "https://www.udemy.com/course/nextjs15-newhooks-with-sns-dev/?couponCode=393DB5488195D49A9141",
+    thumbnail: "/images/courses/nextjs15-new-hooks-shincode-camp.png",
+  },
+  {
+    id: "dev-course-20",
+    title:
+      "Next.js × shadcn/ui × Supabaseで本格的なWebアプリ開発を学ぶフルスタック講座",
+    description:
+      "世界トップクラスのエンジニア「shadcn」のプロジェクトからモダンな技術スタックを通して、Webアプリ開発を学ぶ講座です。API Routeを使ったAPI開発やNextAuth.jsを使ったユーザー認証まで幅開く解説しています。",
+    url: "https://www.udemy.com/course/nextjs-shadcn-fullstack-webapp-dev/?couponCode=83791B1FC10701AC3864",
+    thumbnail: "/images/courses/stripe-with-creating-saas-mod.png",
+  },
+];
 
 export const ArticleList: FC<ArticleListProps> = ({
   type = "trending",
@@ -87,8 +129,12 @@ export const ArticleList: FC<ArticleListProps> = ({
   // typeに基づいて記事をソート
   const sortedArticles = [...articles]
     .filter((article) => {
-      // sourceが"all"の場合は全ての記事を表示
-      if (source === "all") return true;
+      // sourceが"courses"の場合は動画講座を表示
+      if (source === "courses") {
+        return false; // 記事を表示せず、後でVideoCoursesコンポーネントで表示
+      }
+      // sourceが"all"の場合は全ての記事を表示（courses以外）
+      if (source === "all") return article.source !== "courses";
       // それ以外の場合は選択されたソースの記事のみを表示
       return article.source === source;
     })
@@ -113,8 +159,13 @@ export const ArticleList: FC<ArticleListProps> = ({
     })
     .slice(0, 30); // 必要に応じて上位30件に制限
 
+  // sourceが"courses"の場合はVideoCoursesコンポーネントを表示
+  if (source === "courses") {
+    return <VideoCourses courses={TEMP_COURSES} />;
+  }
+
   // 記事がない場合のメッセージ
-  if (sortedArticles.length === 0) {
+  if (sortedArticles.length === 0 && source !== "courses") {
     return (
       <div className="text-center py-8 text-muted-foreground">
         {type === "bookmarks"
