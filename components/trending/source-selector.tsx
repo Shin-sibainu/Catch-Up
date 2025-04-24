@@ -46,7 +46,7 @@ const sources: (Source & { color: string; icon: any })[] = [
   {
     id: 4,
     name: "courses",
-    label: "Udemy",
+    label: "動画講座",
     enabled: true,
     color: "bg-gradient-to-r from-purple-500 to-purple-600",
     icon: Video,
