@@ -14,6 +14,7 @@ import {
   ExternalLink as ExternalLinkIcon,
   ThumbsUp,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { Article } from "@/lib/types/article";
 import { bookmarkArticle } from "@/lib/dal/articles";
@@ -278,28 +279,39 @@ export const ArticleList: FC<ArticleListProps> = ({
             </div>
           </CardContent>
           <CardFooter className="flex justify-between mt-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={bookmarkingStates[article.id]}
-              onClick={() => handleBookmark(article)}
-              className="min-w-[80px]"
-            >
-              {bookmarkingStates[article.id] ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Bookmark
-                  className={`mr-2 h-4 w-4 ${
-                    article.isBookmarked ? "fill-current" : ""
-                  }`}
-                />
-              )}
-              {bookmarkingStates[article.id]
-                ? ""
-                : article.isBookmarked
-                ? "解除"
-                : "保存"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={bookmarkingStates[article.id]}
+                onClick={() => handleBookmark(article)}
+                className="min-w-[80px]"
+              >
+                {bookmarkingStates[article.id] ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Bookmark
+                    className={`mr-2 h-4 w-4 ${
+                      article.isBookmarked ? "fill-current" : ""
+                    }`}
+                  />
+                )}
+                {bookmarkingStates[article.id]
+                  ? ""
+                  : article.isBookmarked
+                  ? "解除"
+                  : "保存"}
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => alert("AI要約（仮）")}
+                className="min-w-[90px] bg-gradient-to-r from-purple-400 to-pink-400 text-white hover:from-purple-500 hover:to-pink-500 hover:shadow-sm transition-all duration-200 border-0"
+              >
+                <Sparkles className="mr-2 h-4 w-4 text-yellow-400" />
+                AI要約
+              </Button>
+            </div>
             <Link href={article.url} target="_blank" rel="noreferrer">
               <Button
                 variant="default"
