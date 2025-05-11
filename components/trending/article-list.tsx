@@ -26,6 +26,8 @@ import Link from "next/link";
 import { VideoCourses } from "./video-courses";
 import { courses } from "@/lib/data/courses";
 
+import { ArticleSummaryModal } from "./ArticleSummaryModal";
+
 interface ArticleListProps {
   type?: ArticleType;
   source?: string;
@@ -56,6 +58,12 @@ export const ArticleList: FC<ArticleListProps> = ({
   const [bookmarkingStates, setBookmarkingStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [openModalId, setOpenModalId] = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summary, setSummary] = useState<string>("");
+  const [fetchingBody, setFetchingBody] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   // エラー表示
   if (error) {
@@ -216,6 +224,75 @@ export const ArticleList: FC<ArticleListProps> = ({
     }
   };
 
+  // AI要約モーダルの開閉・ダミー要約処理
+  const handleOpenSummary = async (article: Article) => {
+    if (fetchingBody || isSummarizing) return; // 多重実行防止
+    setOpenModalId(article.id);
+    setSummary("");
+    setFetchError(null);
+    setSummaryError(null);
+
+    setFetchingBody(true);
+    let body = "";
+    try {
+      const res = await fetch("/api/article-body", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ article }),
+      });
+      if (!res.ok) throw new Error("記事本文APIエラー");
+      const data = await res.json();
+      body = data.body;
+      if (!body) {
+        setFetchError("このHackerNews記事には本文も外部リンクもありません。");
+        setFetchingBody(false);
+        setIsSummarizing(false);
+        return;
+      }
+      // HackerNews外部リンク記事の場合は要約せずそのまま表示
+      if (body.startsWith("このHackerNews記事は外部リンク")) {
+        setSummary(body);
+        setFetchingBody(false);
+        setIsSummarizing(false);
+        return;
+      }
+    } catch (e) {
+      setFetchError("記事本文の取得に失敗しました");
+      setFetchingBody(false);
+      setIsSummarizing(false);
+      return;
+    }
+    setFetchingBody(false);
+
+    setIsSummarizing(true);
+    try {
+      const res = await fetch("/api/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: body }),
+      });
+      if (!res.ok) throw new Error("要約APIエラー");
+      const data = await res.json();
+      setSummary(data.summary || "要約結果が取得できませんでした");
+    } catch (e) {
+      setSummaryError("要約の取得に失敗しました");
+    } finally {
+      setIsSummarizing(false);
+      setFetchingBody(false);
+    }
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open) {
+      setIsSummarizing(false);
+      setFetchingBody(false);
+      setSummary("");
+      setFetchError(null);
+      setSummaryError(null);
+      setOpenModalId(null);
+    }
+  };
+
   // 記事リストの表示
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
@@ -302,15 +379,25 @@ export const ArticleList: FC<ArticleListProps> = ({
                   ? "解除"
                   : "保存"}
               </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => alert("AI要約（仮）")}
-                className="min-w-[90px] bg-gradient-to-r from-purple-400 to-pink-400 text-white hover:from-purple-500 hover:to-pink-500 hover:shadow-sm transition-all duration-200 border-0"
-              >
-                <Sparkles className="mr-2 h-4 w-4 text-yellow-400" />
-                AI要約
-              </Button>
+              {article.source !== "hackernews" && (
+                <ArticleSummaryModal
+                  open={openModalId === article.id}
+                  onOpenChange={handleModalOpenChange}
+                  article={article}
+                  isSummarizing={
+                    openModalId === article.id ? isSummarizing : false
+                  }
+                  summary={openModalId === article.id ? summary : ""}
+                  onTrigger={() => handleOpenSummary(article)}
+                  fetchingBody={
+                    openModalId === article.id ? fetchingBody : false
+                  }
+                  fetchError={openModalId === article.id ? fetchError : null}
+                  summaryError={
+                    openModalId === article.id ? summaryError : null
+                  }
+                />
+              )}
             </div>
             <Link href={article.url} target="_blank" rel="noreferrer">
               <Button
