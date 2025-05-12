@@ -86,28 +86,31 @@ export const ArticleSummaryModal: React.FC<ArticleSummaryModalProps> = ({
           <DialogDescription>記事タイトル: {article.title}</DialogDescription>
         </DialogHeader>
         <div className="py-4 min-h-[60px] max-h-[60vh] overflow-y-auto">
-          {fetchingBody ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="animate-spin h-5 w-5" />
-              記事本文を取得中...
+          {fetchingBody || isSummarizing ? (
+            <div className="flex flex-col items-center gap-6 py-10">
+              <div className="relative flex items-center justify-center mb-2">
+                {/* グラデーションのアニメーション円（Tailwindのみ） */}
+                <div className="absolute w-28 h-28 rounded-full bg-gradient-to-tr from-purple-400 via-pink-400 to-yellow-300 opacity-40 blur-md scale-110 animate-spin" />
+                {/* Sparkles複数配置 */}
+                <Sparkles className="absolute -top-3 left-3 h-7 w-7 text-yellow-300 animate-pulse" />
+                <Sparkles className="absolute top-10 right-0 h-5 w-5 text-pink-400 animate-pulse delay-200" />
+                <Sparkles className="absolute bottom-2 left-10 h-4 w-4 text-purple-400 animate-pulse delay-500" />
+                <Loader2 className="h-14 w-14 text-purple-500 animate-spin z-10 drop-shadow-lg" />
+              </div>
+              <div className="text-2xl font-bold text-purple-700 tracking-wide  mb-1">
+                AI要約中...
+              </div>
+
+              <div className="text-sm text-muted-foreground  text-center">
+                しばらくお待ちください。
+                <br />
+                AIが記事本文を解析し、要点を抽出しています。
+              </div>
             </div>
           ) : fetchError ? (
             <div className="text-red-500">{fetchError}</div>
           ) : summaryError ? (
             <div className="text-red-500">{summaryError}</div>
-          ) : isSummarizing ? (
-            <div className="flex flex-col items-center gap-3 py-8">
-              <div className="relative">
-                <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
-                <Sparkles className="absolute -top-2 -right-2 h-5 w-5 text-yellow-400 animate-pulse" />
-              </div>
-              <div className="text-lg font-semibold text-purple-700">
-                AIが要約を生成しています
-              </div>
-              <div className="text-sm text-muted-foreground animate-pulse">
-                しばらくお待ちください...
-              </div>
-            </div>
           ) : (
             <div
               className="whitespace-pre-line text-base"
