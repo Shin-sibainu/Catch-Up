@@ -27,6 +27,7 @@ import { VideoCourses } from "./video-courses";
 import { courses } from "@/lib/data/courses";
 
 import { ArticleSummaryModal } from "./ArticleSummaryModal";
+import { summarizeArticle } from "@/app/features/summary-actions";
 
 interface ArticleListProps {
   type?: ArticleType;
@@ -233,49 +234,26 @@ export const ArticleList: FC<ArticleListProps> = ({
     setSummaryError(null);
 
     setFetchingBody(true);
-    let body = "";
-    try {
-      const res = await fetch("/api/article-body", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ article }),
-      });
-      if (!res.ok) throw new Error("記事本文APIエラー");
-      const data = await res.json();
-      body = data.body;
-      if (!body) {
-        setFetchError("このHackerNews記事には本文も外部リンクもありません。");
-        setFetchingBody(false);
-        setIsSummarizing(false);
-        return;
-      }
-      // HackerNews外部リンク記事の場合は要約せずそのまま表示
-      if (body.startsWith("このHackerNews記事は外部リンク")) {
-        setSummary(body);
-        setFetchingBody(false);
-        setIsSummarizing(false);
-        return;
-      }
-    } catch (e) {
-      setFetchError("記事本文の取得に失敗しました");
-      setFetchingBody(false);
-      setIsSummarizing(false);
-      return;
-    }
-    setFetchingBody(false);
-
     setIsSummarizing(true);
     try {
-      const res = await fetch("/api/summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: body }),
-      });
-      if (!res.ok) throw new Error("要約APIエラー");
-      const data = await res.json();
-      setSummary(data.summary || "要約結果が取得できませんでした");
+      const { summary, fetchError, summaryError } = await summarizeArticle(
+        article
+      );
+      if (fetchError) {
+        setFetchError(fetchError);
+        setFetchingBody(false);
+        setIsSummarizing(false);
+        return;
+      }
+      if (summaryError) {
+        setSummaryError(summaryError);
+        setFetchingBody(false);
+        setIsSummarizing(false);
+        return;
+      }
+      setSummary(summary || "要約結果が取得できませんでした");
     } catch (e) {
-      setSummaryError("要約の取得に失敗しました");
+      setFetchError("要約処理で予期せぬエラーが発生しました");
     } finally {
       setIsSummarizing(false);
       setFetchingBody(false);
