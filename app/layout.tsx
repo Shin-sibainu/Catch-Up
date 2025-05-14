@@ -1,12 +1,12 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import Header from "@/components/layout/header";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -14,6 +14,9 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
   title: {
     default: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
     template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME}`,
@@ -42,15 +45,16 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    type: "website",
-    locale: "ja_JP",
-    url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: process.env.NEXT_PUBLIC_SITE_NAME,
-    title: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
+    title: {
+      default: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
+      template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME}`,
+    },
     description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
+    type: "website",
+    siteName: process.env.NEXT_PUBLIC_SITE_NAME,
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
@@ -60,20 +64,23 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
-    description:
-      "Zenn、Qiita、Hacker Newsの最新トレンドを一箇所で効率的にチェック",
-    images: ["/og-image.png"],
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
+    description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
+    creator: "@Shin_Engineer",
+    site: "@Shin_Engineer",
+    images: [
+      {
+        url: "/twitter-image",
+        width: 1200,
+        height: 630,
+        alt: `${process.env.NEXT_PUBLIC_SITE_NAME} - エンジニアの技術情報キャッチアップ`,
+      },
+    ],
   },
   verification: {
     google: "google-site-verification-code",
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL,
+    canonical: "/",
   },
 };
 
