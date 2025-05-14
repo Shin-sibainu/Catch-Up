@@ -2,6 +2,8 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Article } from "@/lib/types/article";
+import { decrementUserCredit } from "@/app/features/user-credits";
+import { auth } from "@clerk/nextjs/server";
 
 async function fetchArticleBody(article: Article): Promise<string> {
   try {
@@ -56,7 +58,20 @@ export async function summarizeArticle(article: Article): Promise<{
   summary: string;
   fetchError?: string;
   summaryError?: string;
+  creditError?: string;
 }> {
+  // ユーザー認証・クレジット消費
+  const { userId } = await auth();
+  if (!userId) {
+    return { summary: "", creditError: "ログインが必要です" };
+  }
+  const dec = await decrementUserCredit(userId);
+  if (!dec.success) {
+    return {
+      summary: "",
+      creditError: dec.error || "クレジットが不足しています",
+    };
+  }
   // 本文取得
   const body = await fetchArticleBody(article);
   if (!body) {

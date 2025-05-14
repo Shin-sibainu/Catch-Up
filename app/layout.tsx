@@ -2,11 +2,11 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import Header from "@/components/layout/header";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
