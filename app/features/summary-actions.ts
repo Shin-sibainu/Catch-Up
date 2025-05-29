@@ -42,6 +42,10 @@ async function fetchArticleBody(article: Article): Promise<string> {
           return stripHtmlTags(json.article.body_html);
         }
         return "Zenn記事の本文が取得できませんでした。";
+
+        return (
+          json.article?.body_html || "Zenn記事の本文が取得できませんでした。"
+        );
       }
       case "qiita": {
         const match = article.url.match(/items\/([a-zA-Z0-9]+)/);
@@ -60,6 +64,7 @@ async function fetchArticleBody(article: Article): Promise<string> {
           return stripHtmlTags(json.rendered_body);
         }
         return "Qiita記事の本文が取得できませんでした。";
+        return json.rendered_body || "Qiita記事の本文が取得できませんでした。";
       }
       case "hackernews": {
         let id = article.url.split("id=").pop();
