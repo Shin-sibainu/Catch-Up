@@ -25,34 +25,58 @@ interface ArticleSummaryModalProps {
   summaryError?: string | null;
 }
 
-// Markdownの**太字**をHTMLの<strong>太字</strong>に変換する関数を追加
+// Markdownを見やすいHTMLに変換する関数
 function markdownToHtml(text: string): string {
-  // 太字
-  let html = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  // 箇条書き（* で始まる連続行を<ul><li>...</li></ul>に変換）
-  // html = html.replace(/(^|\n)((\* .+(\n|$))+)/g, (match, p1, p2) => {
-  //   const items = p2
-  //     .trim()
-  //     .split(/\n/)
-  //     .filter((line: string) => /^\* /.test(line))
-  //     .map((line: string) => `<li>${line.replace(/^\* /, "").trim()}</li>`)
-  //     .join("");
-  //   return `\n<ul>${items}</ul>`;
-  // });
-  // 番号付きリスト（1. ... で始まる連続行を<ol><li>...</li></ol>に変換）
-  html = html.replace(/(^|\n)((\d+\. .+(\n|$))+)/g, (match, p1, p2) => {
-    const items = p2
-      .trim()
-      .split(/\n/)
-      .filter((line: string) => /^\d+\. /.test(line))
-      .map((line: string) => `<li>${line.replace(/^\d+\. /, "").trim()}</li>`)
-      .join("");
-    return `\n<ol>${items}</ol>`;
+  let html = text;
+
+  // 1. 見出しを処理（## で始まる行）
+  html = html.replace(
+    /^## (.+)$/gm,
+    '<h3 class="text-lg font-bold text-gray-800 mt-6 mb-3 pb-2 border-b border-gray-200 first:mt-0">$1</h3>'
+  );
+
+  // 2. 太字を処理
+  html = html.replace(
+    /\*\*(.+?)\*\*/g,
+    '<strong class="font-semibold text-gray-900">$1</strong>'
+  );
+
+  // 3. 番号付きリストを処理
+  html = html.replace(/^(\d+\. .+)$/gm, (match) => {
+    const content = match.replace(/^\d+\. /, "");
+    return `<li class="numbered-list-item">${content}</li>`;
   });
-  // * で始まる行をすべて<ul><li>...</li></ul>に
-  html = html.replace(/^\* (.+)$/gm, "<ul><li>$1</li></ul>");
-  // 連続した</ul><ul>を1つにまとめる
-  html = html.replace(/<\/ul>\s*<ul>/g, "");
+
+  // 4. 箇条書きを処理（見出しでない * で始まる行）
+  html = html.replace(/^\* (.+)$/gm, (match, content) => {
+    return `<li class="bullet-list-item">${content}</li>`;
+  });
+
+  // 5. 連続するリスト項目をグループ化
+  html = html.replace(
+    /(<li class="numbered-list-item">.*?<\/li>\s*)+/g,
+    '<ol class="list-decimal list-inside space-y-2 my-4 pl-4 bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">$&</ol>'
+  );
+
+  html = html.replace(
+    /(<li class="bullet-list-item">.*?<\/li>\s*)+/g,
+    '<ul class="space-y-2 my-4 pl-6 bg-purple-50 rounded-lg p-4 border-l-4 border-purple-400">$&</ul>'
+  );
+
+  // 6. 段落を処理
+  html = html
+    .split("\n")
+    .map((line) => {
+      line = line.trim();
+      if (!line) return "";
+      if (line.startsWith("<")) return line; // HTMLタグはそのまま
+      return `<p class="mb-4 text-gray-700 leading-relaxed">${line}</p>`;
+    })
+    .join("\n");
+
+  // 7. 空の段落を削除
+  html = html.replace(/<p[^>]*><\/p>/g, "");
+
   return html;
 }
 
@@ -80,12 +104,17 @@ export const ArticleSummaryModal: React.FC<ArticleSummaryModalProps> = ({
           AI要約
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>AI要約</DialogTitle>
-          <DialogDescription>記事タイトル: {article.title}</DialogDescription>
+          <DialogTitle className="flex items-center space-x-2">
+            <Sparkles className="h-5 w-5 text-purple-500" />
+            <span>AI要約</span>
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mt-2">
+            <strong>記事:</strong> {article.title}
+          </DialogDescription>
         </DialogHeader>
-        <div className="py-4 min-h-[60px] max-h-[60vh] overflow-y-auto">
+        <div className="py-4 min-h-[60px] max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {fetchingBody || isSummarizing ? (
             <div className="flex flex-col items-center gap-6 py-10">
               <div className="relative flex items-center justify-center mb-2">
@@ -108,14 +137,41 @@ export const ArticleSummaryModal: React.FC<ArticleSummaryModalProps> = ({
               </div>
             </div>
           ) : fetchError ? (
-            <div className="text-red-500">{fetchError}</div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span className="text-red-700 font-medium">
+                  エラーが発生しました
+                </span>
+              </div>
+              <p className="text-red-600 mt-2 text-sm">{fetchError}</p>
+            </div>
           ) : summaryError ? (
-            <div className="text-red-500">{summaryError}</div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span className="text-red-700 font-medium">要約エラー</span>
+              </div>
+              <p className="text-red-600 mt-2 text-sm">{summaryError}</p>
+            </div>
           ) : (
-            <div
-              className="whitespace-pre-line text-base"
-              dangerouslySetInnerHTML={{ __html: markdownToHtml(summary) }}
-            />
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              {/* ヘッダー */}
+              <div className="flex items-center space-x-2 mb-4 pb-3 border-b border-gray-200">
+                <Sparkles className="h-5 w-5 text-purple-500" />
+                <span className="font-semibold text-gray-800">AI要約結果</span>
+              </div>
+
+              {/* 要約内容 */}
+              <div
+                className="prose prose-sm max-w-none"
+                style={{
+                  lineHeight: "1.7",
+                  fontSize: "15px",
+                }}
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(summary) }}
+              />
+            </div>
           )}
         </div>
         <DialogFooter>
