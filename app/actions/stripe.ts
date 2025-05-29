@@ -3,7 +3,15 @@
 import Stripe from "stripe";
 import { currentUser } from "@clerk/nextjs/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// 環境変数の存在チェック
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!stripeSecretKey) {
+  console.warn("STRIPE_SECRET_KEY is not set");
+}
+
+// Stripeインスタンスの初期化（環境変数が存在する場合のみ）
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
 
 // プランごとのクレジット数とプラン名
 const PLAN_INFO: Record<string, { credits: number; plan: string }> = {
@@ -13,6 +21,13 @@ const PLAN_INFO: Record<string, { credits: number; plan: string }> = {
 };
 
 export async function createCheckoutSession(priceId: string) {
+  // Stripeが初期化されていない場合はエラーを返す
+  if (!stripe) {
+    return {
+      error: "Stripe設定が不完全です。管理者にお問い合わせください。",
+    };
+  }
+
   const user = await currentUser();
   const email = user?.emailAddresses[0]?.emailAddress;
 

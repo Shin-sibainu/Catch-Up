@@ -6,10 +6,31 @@ import {
   handleSubscriptionDeleted,
 } from "@/lib/stripe/handlers";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// 環境変数の存在チェック
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+if (!stripeSecretKey) {
+  console.warn("STRIPE_SECRET_KEY is not set");
+}
+
+if (!endpointSecret) {
+  console.warn("STRIPE_WEBHOOK_SECRET is not set");
+}
+
+// Stripeインスタンスの初期化（環境変数が存在する場合のみ）
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
 
 export async function POST(req: NextRequest) {
+  // 必要な環境変数がない場合はエラーを返す
+  if (!stripe || !endpointSecret) {
+    console.error("Stripe configuration is incomplete");
+    return NextResponse.json(
+      { error: "Stripe configuration is incomplete" },
+      { status: 500 }
+    );
+  }
+
   const body = await req.text();
   const sig = req.headers.get("stripe-signature")!;
 
