@@ -72,35 +72,19 @@ model sources {
   fetchlogs   fetchlogs[]
 }
 
-// プラン定義用のenum
-enum SubscriptionPlan {
-  FREE
-  BASIC
-  PRO
-  ENTERPRISE
-}
-
-// サブスクリプションステータス定義用のenum
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELED
-  EXPIRED
-  PAST_DUE
-}
-
 model subscriptions {
   id                   String             @id @default(dbgenerated("gen_random_uuid()"))
   userid               String             @unique
   stripecustomerid     String?
   stripesubscriptionid String?
   plan                 SubscriptionPlan   @default(FREE)
-  status              SubscriptionStatus @default(ACTIVE)
-  monthlyCredits      Int                @default(5)  // プランごとの月間付与クレジット数
-  nextCreditGrantAt   DateTime?          @db.Timestamptz(6)  // 次回のクレジット付与日
-  expiresat           DateTime?          @db.Timestamptz(6)
-  createdat           DateTime?          @default(now()) @db.Timestamptz(6)
-  updatedat           DateTime?          @default(now()) @db.Timestamptz(6)
-  users               users              @relation(fields: [userid], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  status               SubscriptionStatus @default(ACTIVE)
+  monthlyCredits       Int                @default(5)
+  nextCreditGrantAt    DateTime?          @db.Timestamptz(6)
+  expiresat            DateTime?          @db.Timestamptz(6)
+  createdat            DateTime?          @default(now()) @db.Timestamptz(6)
+  updatedat            DateTime?          @default(now()) @db.Timestamptz(6)
+  users                users              @relation(fields: [userid], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model userpreferences {
@@ -114,20 +98,34 @@ model userpreferences {
 }
 
 model users {
-  id              String           @id @default(dbgenerated("gen_random_uuid()"))
-  clerkid         String           @unique
-  email           String           @unique
-  name            String?
-  imageurl        String?
-  credits         Int              @default(5)  // 現在の利用可能クレジット
-  totalCredits    Int              @default(5)  // 累計付与クレジット
-  usedCredits     Int              @default(0)  // 使用済みクレジット
-  lastCreditGrant DateTime?        @db.Timestamptz(6)  // 最後にクレジットを付与した日時
-  creditGrantFrequency String      @default("MONTHLY")  // クレジット付与頻度（DAILY/WEEKLY/MONTHLY）
-  maxCredits      Int              @default(10)  // 最大保持可能クレジット数
-  createdat       DateTime?        @default(now()) @db.Timestamptz(6)
-  updatedat       DateTime?        @default(now()) @db.Timestamptz(6)
-  bookmarks       bookmarks[]
-  subscriptions   subscriptions?
-  userpreferences userpreferences?
+  id                   String           @id @default(dbgenerated("gen_random_uuid()"))
+  clerkid              String           @unique
+  email                String           @unique
+  name                 String?
+  imageurl             String?
+  credits              Int              @default(5)
+  totalCredits         Int              @default(5)
+  usedCredits          Int              @default(0)
+  lastCreditGrant      DateTime?        @db.Timestamptz(6)
+  creditGrantFrequency String           @default("MONTHLY")
+  maxCredits           Int              @default(10)
+  createdat            DateTime?        @default(now()) @db.Timestamptz(6)
+  updatedat            DateTime?        @default(now()) @db.Timestamptz(6)
+  bookmarks            bookmarks[]
+  subscriptions        subscriptions?
+  userpreferences      userpreferences?
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PAST_DUE
 }

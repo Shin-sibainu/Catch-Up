@@ -5,6 +5,23 @@ import { Article } from "@/lib/types/article";
 import { decrementUserCredit } from "@/app/features/user-credits";
 import { auth } from "@clerk/nextjs/server";
 
+// HTMLタグを除去してプレーンテキストに変換する関数
+function stripHtmlTags(html: string): string {
+  // HTMLタグを除去
+  let text = html.replace(/<[^>]*>/g, "");
+  // HTMLエンティティをデコード
+  text = text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
+  // 連続する空白や改行を整理
+  text = text.replace(/\s+/g, " ").trim();
+  return text;
+}
+
 async function fetchArticleBody(article: Article): Promise<string> {
   try {
     switch (article.source) {
@@ -15,9 +32,16 @@ async function fetchArticleBody(article: Article): Promise<string> {
         const res = await fetch(`https://zenn.dev/api/articles/${slug}`);
         if (!res.ok) return `Zenn APIエラー: ${res.status}`;
         const json = await res.json();
-        return (
-          json.article?.body_html || "Zenn記事の本文が取得できませんでした。"
-        );
+
+        // まずMarkdown形式の本文を試す
+        if (json.article?.body_markdown) {
+          return json.article.body_markdown;
+        }
+        // Markdown形式がない場合はHTMLからタグを除去
+        if (json.article?.body_html) {
+          return stripHtmlTags(json.article.body_html);
+        }
+        return "Zenn記事の本文が取得できませんでした。";
       }
       case "qiita": {
         const match = article.url.match(/items\/([a-zA-Z0-9]+)/);
@@ -26,7 +50,16 @@ async function fetchArticleBody(article: Article): Promise<string> {
         const res = await fetch(`https://qiita.com/api/v2/items/${itemId}`);
         if (!res.ok) return `Qiita APIエラー: ${res.status}`;
         const json = await res.json();
-        return json.rendered_body || "Qiita記事の本文が取得できませんでした。";
+
+        // まずMarkdown形式の本文を試す
+        if (json.body) {
+          return json.body;
+        }
+        // Markdown形式がない場合はHTMLからタグを除去
+        if (json.rendered_body) {
+          return stripHtmlTags(json.rendered_body);
+        }
+        return "Qiita記事の本文が取得できませんでした。";
       }
       case "hackernews": {
         let id = article.url.split("id=").pop();
