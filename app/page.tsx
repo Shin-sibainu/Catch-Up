@@ -2,7 +2,9 @@ import PageHeader from "@/components/common/page-header";
 import { TrendingArticles } from "@/components/trending/trending-articles";
 import { Suspense } from "react";
 import { LoadingSkeleton } from "@/components/common/loading-skeleton";
+
 import SubscriptionSuccessModal from "@/components/common/SubscriptionSuccessModal";
+
 
 export default function Home() {
   return (
