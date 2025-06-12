@@ -53,6 +53,14 @@ export const Footer = () => {
                   プライバシーポリシー
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/commercial-law"
+                  className="hover:text-foreground transition-colors"
+                >
+                  特定商取引法に基づく表記
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
