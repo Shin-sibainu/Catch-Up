@@ -14,6 +14,7 @@ import {
   ExternalLink as ExternalLinkIcon,
   ThumbsUp,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { Article } from "@/lib/types/article";
 import { bookmarkArticle } from "@/lib/dal/articles";
@@ -24,6 +25,21 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { VideoCourses } from "./video-courses";
 import { courses } from "@/lib/data/courses";
+
+import { ArticleSummaryModal } from "./ArticleSummaryModal";
+import { summarizeArticle } from "@/app/features/summary-actions";
+import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 interface ArticleListProps {
   type?: ArticleType;
@@ -55,6 +71,14 @@ export const ArticleList: FC<ArticleListProps> = ({
   const [bookmarkingStates, setBookmarkingStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [openModalId, setOpenModalId] = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summary, setSummary] = useState<string>("");
+  const [fetchingBody, setFetchingBody] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const router = useRouter();
+  const [showCreditModal, setShowCreditModal] = useState(false);
 
   // エラー表示
   if (error) {
@@ -215,112 +239,217 @@ export const ArticleList: FC<ArticleListProps> = ({
     }
   };
 
+  // AI要約モーダルの開閉・ダミー要約処理
+  const handleOpenSummary = async (article: Article) => {
+    if (fetchingBody || isSummarizing) return; // 多重実行防止
+    if (!user) {
+      toast({
+        variant: "destructive",
+        description: "AI要約を利用するにはログインが必要です",
+      });
+      return;
+    }
+    setOpenModalId(article.id);
+    setSummary("");
+    setFetchError(null);
+    setSummaryError(null);
+    setFetchingBody(true);
+    setIsSummarizing(true);
+    try {
+      const { summary, fetchError, summaryError, creditError } =
+        await summarizeArticle(article);
+      if (creditError) {
+        setShowCreditModal(true); // クレジット不足時にモーダルを表示
+        setFetchingBody(false);
+        setIsSummarizing(false);
+        return;
+      }
+      if (fetchError) {
+        setFetchError(fetchError);
+        setFetchingBody(false);
+        setIsSummarizing(false);
+        return;
+      }
+      if (summaryError) {
+        setSummaryError(summaryError);
+        setFetchingBody(false);
+        setIsSummarizing(false);
+        return;
+      }
+      setSummary(summary || "要約結果が取得できませんでした");
+      router.refresh();
+    } catch (e) {
+      setFetchError("要約処理で予期せぬエラーが発生しました");
+    } finally {
+      setIsSummarizing(false);
+      setFetchingBody(false);
+    }
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open) {
+      setIsSummarizing(false);
+      setFetchingBody(false);
+      setSummary("");
+      setFetchError(null);
+      setSummaryError(null);
+      setOpenModalId(null);
+    }
+  };
+
   // 記事リストの表示
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
-      {sortedArticles.map((article) => (
-        <Card
-          key={article.id}
-          className={`flex flex-col border-t-4 transition-transform hover:scale-[1.01] ${
-            sourceColors[article.source] || ""
-          }`}
-        >
-          <CardHeader>
-            <Link
-              href={article.url}
-              className="text-lg font-semibold line-clamp-2 hover:text-primary transition-colors hover:underline underline-offset-1"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {article.emoji && <span className="mr-2">{article.emoji}</span>}
-              {article.title}
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <span className="font-medium truncate">
-                {article.author || "Unknown"}
-              </span>
-              {article.publication && (
-                <>
-                  <span>•</span>
-                  <span className="truncate">
-                    {article.publication.displayName}
-                  </span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
-              <span className="flex items-center gap-1">
-                <ThumbsUp className="h-4 w-4" />
-                {typeof article.likes === "number"
-                  ? article.likes.toLocaleString()
-                  : "0"}
-              </span>
-              {typeof article.bookmarks === "number" && (
-                <>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Bookmark className="h-4 w-4" />
-                    {article.bookmarks.toLocaleString()}
-                  </span>
-                </>
-              )}
-            </div>
-            <div className="text-sm text-gray-500 mt-2">
-              {article.timestamp
-                ? new Date(article.timestamp).toLocaleDateString("ja-JP", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })
-                : "日付なし"}
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between mt-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={bookmarkingStates[article.id]}
-              onClick={() => handleBookmark(article)}
-              className="min-w-[80px]"
-            >
-              {bookmarkingStates[article.id] ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Bookmark
-                  className={`mr-2 h-4 w-4 ${
-                    article.isBookmarked ? "fill-current" : ""
-                  }`}
-                />
-              )}
-              {bookmarkingStates[article.id]
-                ? ""
-                : article.isBookmarked
-                ? "解除"
-                : "保存"}
-            </Button>
-            <Link href={article.url} target="_blank" rel="noreferrer">
+    <>
+      {/* クレジット不足時のモーダル */}
+      <AlertDialog open={showCreditModal} onOpenChange={setShowCreditModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>クレジットがありません</AlertDialogTitle>
+            <AlertDialogDescription>
+              AI要約を利用するにはクレジットが必要です。料金プランページでプランをご確認ください。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction asChild>
               <Button
-                variant="default"
-                size="sm"
-                className={`${
-                  article.source === "zenn"
-                    ? "bg-[#3EA8FF]"
-                    : article.source === "qiita"
-                    ? "bg-[#55C500]"
-                    : article.source === "hackernews"
-                    ? "bg-[#FF6600]"
-                    : ""
-                } hover:opacity-90`}
+                onClick={() => {
+                  setShowCreditModal(false);
+                  router.push("/pricing");
+                }}
               >
-                <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                読む
+                プランを見る
               </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      ))}
-    </div>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
+        {sortedArticles.map((article) => (
+          <Card
+            key={article.id}
+            className={`flex flex-col border-t-4 transition-transform hover:scale-[1.01] ${
+              sourceColors[article.source] || ""
+            }`}
+          >
+            <CardHeader>
+              <Link
+                href={article.url}
+                className="text-lg font-semibold line-clamp-2 hover:text-primary transition-colors hover:underline underline-offset-1"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {article.emoji && <span className="mr-2">{article.emoji}</span>}
+                {article.title}
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                <span className="font-medium truncate">
+                  {article.author || "Unknown"}
+                </span>
+                {article.publication && (
+                  <>
+                    <span>•</span>
+                    <span className="truncate">
+                      {article.publication.displayName}
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+                <span className="flex items-center gap-1">
+                  <ThumbsUp className="h-4 w-4" />
+                  {typeof article.likes === "number"
+                    ? article.likes.toLocaleString()
+                    : "0"}
+                </span>
+                {typeof article.bookmarks === "number" && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Bookmark className="h-4 w-4" />
+                      {article.bookmarks.toLocaleString()}
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="text-sm text-gray-500 mt-2">
+                {article.timestamp
+                  ? new Date(article.timestamp).toLocaleDateString("ja-JP", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "日付なし"}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between mt-auto">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={bookmarkingStates[article.id]}
+                  onClick={() => handleBookmark(article)}
+                  className="min-w-[80px]"
+                >
+                  {bookmarkingStates[article.id] ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Bookmark
+                      className={`mr-2 h-4 w-4 ${
+                        article.isBookmarked ? "fill-current" : ""
+                      }`}
+                    />
+                  )}
+                  {bookmarkingStates[article.id]
+                    ? ""
+                    : article.isBookmarked
+                    ? "解除"
+                    : "保存"}
+                </Button>
+                {article.source !== "hackernews" && (
+                  <ArticleSummaryModal
+                    open={openModalId === article.id}
+                    onOpenChange={handleModalOpenChange}
+                    article={article}
+                    isSummarizing={
+                      openModalId === article.id ? isSummarizing : false
+                    }
+                    summary={openModalId === article.id ? summary : ""}
+                    onTrigger={() => handleOpenSummary(article)}
+                    fetchingBody={
+                      openModalId === article.id ? fetchingBody : false
+                    }
+                    fetchError={openModalId === article.id ? fetchError : null}
+                    summaryError={
+                      openModalId === article.id ? summaryError : null
+                    }
+                  />
+                )}
+              </div>
+              <Link href={article.url} target="_blank" rel="noreferrer">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className={`${
+                    article.source === "zenn"
+                      ? "bg-[#3EA8FF]"
+                      : article.source === "qiita"
+                      ? "bg-[#55C500]"
+                      : article.source === "hackernews"
+                      ? "bg-[#FF6600]"
+                      : ""
+                  } hover:opacity-90`}
+                >
+                  <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                  読む
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </>
   );
 };
