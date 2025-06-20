@@ -7,165 +7,135 @@ export const metadata: Metadata = {
 
 export default function CommercialLawPage() {
   return (
-    <div className="container max-w-3xl mx-auto px-4 py-12">
+    <div className="container max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-8">特定商取引法に基づく表記</h1>
+
+      <div className="overflow-x-auto mb-8">
+        <table className="min-w-full border-collapse border border-gray-300">
+          <tbody>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold min-w-[150px]">
+                販売事業者
+              </td>
+              <td className="px-4 py-3">Catch Up運営事務局※個人事業主</td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                運営統括責任者
+              </td>
+              <td className="px-4 py-3">Catch Up管理者</td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                所在地
+              </td>
+              <td className="px-4 py-3">※請求があったら遅滞なく開示します</td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                連絡先
+              </td>
+              <td className="px-4 py-3">
+                メールアドレス：shincodeinc@gmail.com
+                <br />
+                ※電話番号は請求があったら遅滞なく開示します
+                <br />
+                営業時間：平日10:00〜18:00（土日祝日・年末年始を除く）
+              </td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                販売価格
+              </td>
+              <td className="px-4 py-3">
+                各商品ページに表示される価格に準じます
+                <br />
+                ※表示価格は全て税込みです
+              </td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                商品代金以外の必要料金
+              </td>
+              <td className="px-4 py-3">決済手数料：無料</td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                支払方法
+              </td>
+              <td className="px-4 py-3">
+                クレジットカード決済（Stripe）
+                <br />
+                対応カード：Visa, Mastercard, American Express, JCB
+              </td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                支払時期
+              </td>
+              <td className="px-4 py-3">
+                クレジットカード決済の場合、ご注文時に即時決済されます
+              </td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                商品の引渡時期
+              </td>
+              <td className="px-4 py-3">
+                お支払い完了後、即座にサービスをご利用いただけます
+              </td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="border-r border-gray-300 bg-gray-50 px-4 py-3 font-semibold">
+                返品・キャンセルについて
+              </td>
+              <td className="px-4 py-3">
+                <div className="space-y-2">
+                  <div>
+                    <strong>＜お客様都合による返金の場合＞</strong>
+                    <br />
+                    ご購入後14日以内であれば、全額返金に対応いたします。
+                    <br />
+                    ※返金をご希望の場合は、メールにてご連絡ください
+                    <br />
+                    ※返金手続きには3-5営業日程度かかる場合があります
+                  </div>
+                  <div>
+                    <strong>＜サービスに不具合があった場合＞</strong>
+                    <br />
+                    当社の責任において速やかに不具合を修正、もしくは全額返金いたします
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div className="prose prose-sm max-w-none">
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">販売業者</h2>
-          <p>Catch Up運営事務局</p>
+          <h2 className="text-xl font-semibold mb-4">特記事項</h2>
+          <ul className="list-disc pl-6">
+            <li>本サービスはデジタルコンテンツの提供です</li>
+            <li>
+              サービスの性質上、提供開始後の返品には応じかねる場合があります
+            </li>
+            <li>商品の詳細については、各商品ページをご確認ください</li>
+          </ul>
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">運営責任者</h2>
-          <p>代表者名</p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">所在地</h2>
-          <p>
-            〒000-0000
-            <br />
-            東京都○○区○○○○
-            <br />
-            ※お客様からのお問い合わせは、下記のお問い合わせ先までお願いいたします。
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">お問い合わせ先</h2>
-          <p>
-            メールアドレス: support@catch-up.example.com
-            <br />
-            ※お問い合わせは上記メールアドレスまでお願いいたします。
-            <br />
-            ※営業時間: 平日 10:00〜18:00（土日祝日を除く）
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">商品・サービスの種類</h2>
-          <p>
-            技術情報キュレーションサービス「Catch Up」の有料プラン提供
-            <br />
-            ・月額サブスクリプションサービス
-            <br />
-            ・デジタルコンテンツの提供
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">商品・サービスの価格</h2>
-          <div className="mb-4">
-            <h3 className="text-lg font-medium mb-2">月額プラン</h3>
-            <ul className="list-disc pl-6 mb-4">
-              <li>ベーシックプラン: 月額 980円（税込）</li>
-              <li>プレミアムプラン: 月額 1,980円（税込）</li>
+          <h2 className="text-xl font-semibold mb-4">プラン詳細</h2>
+          <div className="bg-muted p-4 rounded-lg">
+            <ul className="list-disc pl-6 space-y-1">
+              <li>ベーシックプラン: 30クレジット/月</li>
+              <li>プロプラン: 80クレジット/月</li>
+              <li>エンタープライズプラン: 200クレジット/月</li>
             </ul>
-            <p className="text-sm text-muted-foreground">
-              ※価格は予告なく変更される場合があります。
-              <br />
-              ※最新の価格は料金ページでご確認ください。
+            <p className="text-sm text-muted-foreground mt-2">
+              ※最新の価格は料金ページでご確認ください
             </p>
           </div>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">支払方法</h2>
-          <ul className="list-disc pl-6 mb-4">
-            <li>
-              クレジットカード決済（Visa、Mastercard、American Express、JCB）
-            </li>
-            <li>デビットカード決済</li>
-          </ul>
-          <p className="text-sm text-muted-foreground">
-            ※決済処理はStripe Inc.により安全に処理されます。
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">支払時期</h2>
-          <ul className="list-disc pl-6 mb-4">
-            <li>月額プラン: 毎月の契約更新日に自動決済</li>
-            <li>初回決済: サブスクリプション開始時に即時決済</li>
-          </ul>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">
-            商品・サービスの提供時期
-          </h2>
-          <p>
-            決済完了後、即座にサービスをご利用いただけます。
-            <br />
-            月額プランは契約期間中、継続してサービスを提供いたします。
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">
-            返品・交換・キャンセルについて
-          </h2>
-          <div className="mb-4">
-            <h3 className="text-lg font-medium mb-2">
-              デジタルコンテンツの性質上の制限
-            </h3>
-            <p className="mb-4">
-              本サービスはデジタルコンテンツの提供であり、商品の性質上、原則として返品・返金はお受けできません。
-            </p>
-
-            <h3 className="text-lg font-medium mb-2">
-              サブスクリプションのキャンセル
-            </h3>
-            <ul className="list-disc pl-6 mb-4">
-              <li>サブスクリプションはいつでもキャンセル可能です</li>
-              <li>キャンセル後は次回更新日以降、課金が停止されます</li>
-              <li>
-                キャンセル後も現在の契約期間終了まではサービスをご利用いただけます
-              </li>
-            </ul>
-
-            <h3 className="text-lg font-medium mb-2">例外的な返金対応</h3>
-            <ul className="list-disc pl-6 mb-4">
-              <li>システム障害により長期間サービスが利用できなかった場合</li>
-              <li>
-                当社の責に帰すべき事由により、サービスが提供できなかった場合
-              </li>
-              <li>重複決済などの決済エラーが発生した場合</li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">動作環境</h2>
-          <div className="mb-4">
-            <h3 className="text-lg font-medium mb-2">推奨ブラウザ</h3>
-            <ul className="list-disc pl-6 mb-4">
-              <li>Google Chrome（最新版）</li>
-              <li>Mozilla Firefox（最新版）</li>
-              <li>Safari（最新版）</li>
-              <li>Microsoft Edge（最新版）</li>
-            </ul>
-
-            <h3 className="text-lg font-medium mb-2">その他の要件</h3>
-            <ul className="list-disc pl-6 mb-4">
-              <li>インターネット接続環境</li>
-              <li>JavaScript有効化</li>
-              <li>Cookie有効化</li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">その他の条件</h2>
-          <ul className="list-disc pl-6 mb-4">
-            <li>本サービスの利用には、利用規約への同意が必要です</li>
-            <li>未成年者の利用には保護者の同意が必要です</li>
-            <li>サービス内容は予告なく変更される場合があります</li>
-            <li>
-              システムメンテナンス等により、一時的にサービスが利用できない場合があります
-            </li>
-          </ul>
         </section>
 
         <section className="mb-8">
@@ -176,15 +146,6 @@ export default function CommercialLawPage() {
               プライバシーポリシー
             </a>
             をご確認ください。
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">表示義務等に関する事項</h2>
-          <p className="text-sm text-muted-foreground">
-            本表記は、特定商取引に関する法律（特定商取引法）第11条（通信販売についての広告）、
-            第12条（誇大広告等の禁止）、第13条（未承諾者に対する電子メール広告の提供の禁止等）
-            に基づいて表示しています。
           </p>
         </section>
 
