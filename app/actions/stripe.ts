@@ -13,24 +13,15 @@ if (!stripeSecretKey) {
 // Stripeインスタンスの初期化（環境変数が存在する場合のみ）
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
 
-// プランごとのクレジット数とプラン名
-const TEST_PLAN_INFO: Record<string, { credits: number; plan: string }> = {
-  price_1RQHe4PtbLMlHPtdHnf70fhX: { credits: 30, plan: "BASIC" },
-  price_1RQHeIPtbLMlHPtd46n9Ad2I: { credits: 80, plan: "PRO" },
-  price_1RQHeYPtbLMlHPtdVCZWuI9C: { credits: 200, plan: "ENTERPRISE" },
-};
-
+// プランごとのクレジット数とプラン名（本番用）
 const PROD_PLAN_INFO: Record<string, { credits: number; plan: string }> = {
   price_1RbxVKL1rauPNMhiuqVWzVZJ: { credits: 30, plan: "BASIC" },
   price_1RbxbSL1rauPNMhibz8VUcba: { credits: 80, plan: "PRO" },
   price_1RbxbfL1rauPNMhigryMoVBJ: { credits: 200, plan: "ENTERPRISE" },
 };
 
-// 環境に応じてプラン情報を切り替え
-// 開発時も本番priceIdを使用（テスト用priceIdが無効のため）
+// 本番用priceIdを使用
 const PLAN_INFO = PROD_PLAN_INFO;
-// const PLAN_INFO =
-//   process.env.NODE_ENV === "production" ? PROD_PLAN_INFO : TEST_PLAN_INFO;
 
 export async function createCheckoutSession(priceId: string) {
   // Stripeが初期化されていない場合はエラーを返す

@@ -28,7 +28,7 @@ export default function Pricing() {
         "基本的な要約機能",
         "モバイルアプリアクセス",
       ],
-      priceId: "price_1RQHe4PtbLMlHPtdHnf70fhX",
+      priceId: "price_1RbxVKL1rauPNMhiuqVWzVZJ",
     },
     {
       name: "スタンダード",
@@ -41,7 +41,7 @@ export default function Pricing() {
         "要約の保存と整理機能",
         "クラウド同期",
       ],
-      priceId: "price_1RQHeIPtbLMlHPtd46n9Ad2I",
+      priceId: "price_1RbxbSL1rauPNMhibz8VUcba",
     },
     {
       name: "プロフェッショナル",
@@ -55,7 +55,7 @@ export default function Pricing() {
         "チーム共有機能",
         "優先サポート",
       ],
-      priceId: "price_1RQHeYPtbLMlHPtdVCZWuI9C",
+      priceId: "price_1RbxbfL1rauPNMhigryMoVBJ",
     },
   ];
 
