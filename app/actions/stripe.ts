@@ -27,8 +27,10 @@ const PROD_PLAN_INFO: Record<string, { credits: number; plan: string }> = {
 };
 
 // 環境に応じてプラン情報を切り替え
-const PLAN_INFO =
-  process.env.NODE_ENV === "production" ? PROD_PLAN_INFO : TEST_PLAN_INFO;
+// 開発時も本番priceIdを使用（テスト用priceIdが無効のため）
+const PLAN_INFO = PROD_PLAN_INFO;
+// const PLAN_INFO =
+//   process.env.NODE_ENV === "production" ? PROD_PLAN_INFO : TEST_PLAN_INFO;
 
 export async function createCheckoutSession(priceId: string) {
   // Stripeが初期化されていない場合はエラーを返す

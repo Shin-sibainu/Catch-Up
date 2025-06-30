@@ -4,6 +4,7 @@ import {
   handleSubscriptionCreated,
   handleSubscriptionUpdated,
   handleSubscriptionDeleted,
+  handleInvoicePaymentSucceeded,
 } from "@/lib/stripe/handlers";
 
 // 環境変数の存在チェック
@@ -59,6 +60,12 @@ export async function POST(req: NextRequest) {
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object as Stripe.Subscription;
     return await handleSubscriptionDeleted(stripe, subscription);
+  }
+
+  // 請求書支払い成功時（月次クレジット付与）
+  if (event.type === "invoice.payment_succeeded") {
+    const invoice = event.data.object as Stripe.Invoice;
+    return await handleInvoicePaymentSucceeded(stripe, invoice);
   }
 
   return NextResponse.json({ received: true });

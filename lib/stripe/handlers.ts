@@ -200,3 +200,73 @@ export async function handleSubscriptionDeleted(
     );
   }
 }
+
+/**
+ * 請求書支払い成功時のハンドラー（月次クレジット付与）
+ */
+export async function handleInvoicePaymentSucceeded(
+  stripe: Stripe,
+  invoice: Stripe.Invoice
+): Promise<NextResponse> {
+  // サブスクリプション関連の請求書のみ処理
+  const subscriptionId = (invoice as any).subscription;
+
+  if (!subscriptionId) {
+    console.log("Non-subscription invoice, skipping");
+    return NextResponse.json({ received: true });
+  }
+
+  const subscriptionIdString =
+    typeof subscriptionId === "string" ? subscriptionId : subscriptionId.id;
+
+  const email = await getCustomerEmail(stripe, invoice.customer as string);
+
+  if (!email) {
+    console.error("Customer email not found");
+    return NextResponse.json(
+      { error: "Customer email not found" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // サブスクリプション情報を取得
+    const subscription = await stripe.subscriptions.retrieve(
+      subscriptionIdString
+    );
+
+    const { planName, monthlyCredits } =
+      getPlanInfoFromSubscription(subscription);
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+      console.error("User not found:", email);
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // 月次クレジット付与
+    const creditSuccess = await grantCredits(user, monthlyCredits);
+    if (!creditSuccess) {
+      console.error("Credit grant failed");
+      return NextResponse.json(
+        { error: "Credit grant failed" },
+        { status: 500 }
+      );
+    }
+
+    console.log(
+      `月次クレジット付与: ${email}, プラン: ${planName}, クレジット: ${monthlyCredits}`
+    );
+    return NextResponse.json({ received: true });
+  } catch (error: any) {
+    console.error("Error processing invoice payment:", {
+      message: error?.message,
+      stack: error?.stack,
+      error,
+    });
+    return NextResponse.json(
+      { error: "Internal server error", detail: error?.message },
+      { status: 500 }
+    );
+  }
+}
